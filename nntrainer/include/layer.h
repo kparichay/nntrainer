@@ -41,8 +41,8 @@ namespace nntrainer {
 typedef enum {
   COST_MSR,
   COST_ENTROPY,
-  COST_UNKNOWN }
-CostType;
+  COST_UNKNOWN
+} CostType;
 
 /**
  * @brief     Enumeration of activation function type

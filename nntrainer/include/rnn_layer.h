@@ -3,17 +3,17 @@
  *
  * SPDX-License-Identifier: Apache-2.0-only
  *
- * @file	fc_layer.h
- * @date	14 May 2020
- * @brief	This is Fully Connected Layer Class of Neural Network
+ * @file	rnn_layer.h
+ * @date	19 June 2020
+ * @brief	This is Recurrent Neural Network Layer Class for Neural Network
  * @see		https://github.com/nnstreamer/nntrainer
- * @author	Jijoong Moon <jijoong.moon@samsung.com>
+ * @author	Parichay Kapoor <pk.kapoor@samsung.com>
  * @bug		No known bugs except for NYI items
  *
  */
 
-#ifndef __FC_LAYER_H__
-#define __FC_LAYER_H__
+#ifndef __RNN_LAYER_H__
+#define __RNN_LAYER_H__
 #ifdef __cplusplus
 
 #include <fstream>
@@ -26,29 +26,29 @@
 namespace nntrainer {
 
 /**
- * @class   FullyConnectedLayer
- * @brief   fully connected layer
+ * @class   RNNLayer
+ * @brief   Recurrent Neural Network Layer
  */
-class FullyConnectedLayer : public Layer {
+class RNNLayer : public Layer {
 public:
   /**
-   * @brief     Constructor of Fully Connected Layer
+   * @brief     Constructor of RNN Layer
    */
-  FullyConnectedLayer() : unit(0) { setType(LAYER_FC); };
+  RNNLayer();
 
   /**
-   * @brief     Destructor of Fully Connected Layer
+   * @brief     Destructor of RNN Layer
    */
-  ~FullyConnectedLayer(){};
+  ~RNNLayer();
 
   /**
-   * @brief     Read Weight & Bias Data from file
+   * @brief     Read RNN parameters and data from file
    * @param[in] file input stream file
    */
   void read(std::ifstream &file);
 
   /**
-   * @brief     Save Weight & Bias Data to file
+   * @brief     Save RNN parameters and data to file
    * @param[in] file output stream file
    */
   void save(std::ofstream &file);
@@ -56,16 +56,15 @@ public:
   /**
    * @brief     forward propagation with input
    * @param[in] in Input Tensor from upper layer
-   * @retval    Activation(W x input + B)
+   * @retval    output from forward prop
    */
   Tensor forwarding(Tensor in, int &status);
 
   /**
    * @brief     back propagation
-   *            Calculate dJdB & dJdW & Update W & B
    * @param[in] input Input Tensor from lower layer
    * @param[in] iteration Number of Epoch for ADAM
-   * @retval    dJdB x W Tensor
+   * @retval    derivative for the next layer
    */
   Tensor backwarding(Tensor in, int iteration);
 
@@ -103,10 +102,11 @@ public:
 
 private:
   unsigned int unit;
-  Tensor weight;
-  Tensor bias;
+  std::shared_ptr<FullyConnectedLayer> op_u_x;
+  std::shared_ptr<FullyConnectedLayer> op_w_st_1;
+  std::shared_ptr<FullyConnectedLayer> op_v_st;
 };
 } // namespace nntrainer
 
 #endif /* __cplusplus */
-#endif /* __FC_LAYER_H__ */
+#endif /* __RNN_LAYER_H__ */

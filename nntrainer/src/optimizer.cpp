@@ -99,6 +99,7 @@ void Optimizer::calculate(Tensor &djdw, Tensor &djdb, Tensor &weight,
   switch (type) {
   case OptType::sgd:
     weight.add_i(djdwAvg, -ll);
+    bias.add_i(djdbAvg, -ll);
     break;
   case OptType::adam: {
     std::function<float(float)> sqrtEps = [&](float f) {
@@ -130,10 +131,6 @@ void Optimizer::calculate(Tensor &djdw, Tensor &djdb, Tensor &weight,
   case OptType::unknown:
   default:
     break;
-  }
-
-  if (init_zero) {
-    bias.add_i(djdbAvg, -ll);
   }
 }
 

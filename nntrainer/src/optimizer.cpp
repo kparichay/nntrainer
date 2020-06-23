@@ -81,9 +81,6 @@ void Optimizer::calculate(Tensor &djdw, Tensor &djdb, Tensor &weight,
                           Tensor &bias, int iteration, bool init_zero,
                           WeightDecayParam weight_decay) {
   Tensor djdwAvg, djdbAvg;
-  if (weight_decay.type == WeightDecayType::l2norm) {
-    djdw = djdw.add(weight.multiply(weight_decay.lambda));
-  }
 
   float ll = popt.learning_rate;
   if (popt.decay_steps != -1) {

@@ -41,7 +41,7 @@ def save(filename, *data):
           np.array(item, dtype=np.float32).tofile(outfile)
           try:
             print(item.shape, " data is generated")
-            print(item)
+            # print(item)
           except:
             pass
 
@@ -52,6 +52,12 @@ def gen_tensor(shape, dtype=dtypes.float32):
   return np.random.random_sample(shape)
 
 ##
+# @brief generate random tensor
+def gen_tensor_int(shape):
+  rand_t = np.random.randint(1, 100, size=shape)
+  return rand_t.astype(np.float32)
+
+##
 # @brief generate random data and save
 # @param[in] outfile_name outfile_name
 # @param[in] batch batch size
@@ -60,8 +66,11 @@ def gen_tensor(shape, dtype=dtypes.float32):
 # @param[in] width width size
 # @return data generted data
 
-def gen_input(outfile_name, input_shape, savefile=True):
-    x=gen_tensor(input_shape)
+def gen_input(outfile_name, input_shape, savefile=True, int_data=False):
+    if int_data:
+        x = gen_tensor_int(input_shape)
+    else:
+        x = gen_tensor(input_shape)
     if savefile:
         save(outfile_name, x)
     return x
@@ -92,22 +101,73 @@ def conv2d_tf(x, kernel, batch, width, height, channel, k_width, k_height, k_num
     kernel_w = tf.constant_initializer(kernel)
     conv2d_layer = tf.keras.layers.Conv2D(k_num, k_width, strides = stride, padding=pad, kernel_initializer=kernel_w)(tf_input)
 
-    conv2d_variables = tf.compat.v1.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
+    optimizer = tf.keras.optimizers.SGD(learning_rate = 1)
 
-    input_variables = [tf_input] + conv2d_variables
+    trainable_variables = tf.compat.v1.trainable_variables()
+    all_variables = [tf_input] + trainable_variables
 
-    grad = tf.gradients(conv2d_layer, input_variables)
+    grad = tf.gradients(conv2d_layer, all_variables)
+    train_op = optimizer.apply_gradients(list(zip(grad[1:], trainable_variables)))
 
     with tf.compat.v1.Session() as sess:
         sess.run(tf.global_variables_initializer())
-        conv2d_result = sess.run(conv2d_layer, feed_dict={tf_input: x})
-        grad_result = sess.run(grad, feed_dict={tf_input:x})
-    if DEBUG:
-        for item, input_variable in zip(grad_result, input_variables):
-            print(input_variable.name)
-            print(item)
 
-    return conv2d_result, grad_result[0], grad_result[1], grad_result[2]
+        conv2d_result, grad_result, _ = sess.run([conv2d_layer, grad, train_op], feed_dict={tf_input: x})
+        conv2d_result2, grad_result2, _ = sess.run([conv2d_layer, grad, train_op], feed_dict={tf_input: x})
+        conv2d_result2, grad_result2, _ = sess.run([conv2d_layer, grad, train_op], feed_dict={tf_input: x})
+        conv2d_result2, grad_result2, _ = sess.run([conv2d_layer, grad, train_op], feed_dict={tf_input: x})
+        conv2d_result2, grad_result2, _ = sess.run([conv2d_layer, grad, train_op], feed_dict={tf_input: x})
+
+    if DEBUG:
+        for item, input_variable in zip(grad_result, all_variables):
+            print(input_variable.name)
+            print(item.shape)
+        for item, input_variable in zip(grad_result2, all_variables):
+            print(input_variable.name)
+            print(item.shape)
+
+    return conv2d_result, grad_result[0], grad_result[1], grad_result[2], \
+        conv2d_result2, grad_result2[0], grad_result2[1], grad_result2[2]
+
+##
+# @brief conv2d layer forwarding with tensorflow
+# @param[in] x input data
+# @param[in] kernel weight data
+# @param[in] kernel2 weight data
+# @return tf_o calculated result
+def conv2d_tf_2(x, kernel, bias, kernel2, bias2):
+    x = np.transpose(x,[0,2,3,1])
+    kernel = np.transpose(kernel, [2,3,1,0])
+    kernel2 = np.transpose(kernel2, [2,3,1,0])
+    tf.compat.v1.reset_default_graph()
+    input_shape = (1, 28, 28, 3)
+
+    tf_input = tf.compat.v1.placeholder(
+        dtype=dtypes.float32, shape=input_shape, name='input')
+    kernel_w = tf.constant_initializer(kernel)
+    kernel_w2 = tf.constant_initializer(kernel2)
+    bias_w =  tf.constant_initializer(bias)
+    bias_w2 = tf.constant_initializer(bias2)
+    conv2d_layer = tf.keras.layers.Conv2D(6, 5, kernel_initializer=kernel_w, bias_initializer=bias_w)(tf_input)
+    conv2d_layer2 = tf.keras.layers.Conv2D(12, 1, kernel_initializer=kernel_w2, bias_initializer=bias_w2)(conv2d_layer)
+
+    optimizer = tf.keras.optimizers.SGD(learning_rate = 1)
+
+    trainable_variables = tf.compat.v1.trainable_variables()
+    all_variables = [tf_input] + trainable_variables
+
+    grad = tf.gradients(conv2d_layer2, all_variables)
+    train_op = optimizer.apply_gradients(list(zip(grad[1:], trainable_variables)))
+
+    with tf.compat.v1.Session() as sess:
+        sess.run(tf.global_variables_initializer())
+        conv2d_result, conv2d_result2, grad_result, _ = sess.run([conv2d_layer, conv2d_layer2, grad, train_op], feed_dict={tf_input: x})
+    if DEBUG:
+        for item, input_variable in zip(grad_result, all_variables):
+            print(input_variable.name)
+            print(item.shape)
+
+    return conv2d_result, conv2d_result2, grad_result
 
 def pooling2d_tf(x, pool_size, stride, padding, pooling):
     x = np.transpose(x, [0,2,3,1])
@@ -350,16 +410,55 @@ def bn_tf(x, *, trainable=True, init_beta=gen_tensor, init_gamma=gen_tensor, axi
 
 
 def gen_test_case_conv(i_b, i_c, i_h, i_w, k_c, k_h, k_w, padding, stride, bias, base_name):
-    x=gen_input(base_name+"_conv2DLayer.in", [i_b, i_c, i_h, i_w])
-    kernel=gen_input(base_name+"_conv2DKernel.in", [k_c, i_c, k_h, k_w])
+    x=gen_input(base_name+"_conv2DLayer.in", [i_b, i_c, i_h, i_w], int_data=True)
+    kernel=gen_input(base_name+"_conv2DKernel.in", [k_c, i_c, k_h, k_w], int_data=True)
     with open(base_name+"_conv2DKernel.in", 'ab') as outfile:
         np.array(bias, dtype=np.float32).tofile(outfile)
 
-    golden_conv, golden_grad_input, golden_grad_kernel, golden_grad_bias=conv2d_tf(x, kernel, i_b, i_h, i_w, i_c, k_h, k_w, k_c, stride, padding, bias)
+    golden_conv, golden_grad_input, golden_grad_kernel, golden_grad_bias, \
+        golden_conv2, golden_grad_input2, golden_grad_kernel2, golden_grad_bias2 = \
+        conv2d_tf(x, kernel, i_b, i_h, i_w, i_c, k_h, k_w, k_c, stride, padding, bias)
     save(base_name+"_goldenConv2DResult.out", np.transpose(golden_conv,(0,3,1,2)))
     save(base_name+"_goldenInputGrad.out", np.transpose(golden_grad_input,(0,3,1,2)))
     save(base_name+"_goldenKernelGrad.out", np.transpose(golden_grad_kernel,(3,2,0,1)))
     save(base_name+"_goldenBiasGrad.out", golden_grad_bias)
+    save(base_name+"_goldenConv2DResult2.out", np.transpose(golden_conv2,(0,3,1,2)))
+    save(base_name+"_goldenInputGrad2.out", np.transpose(golden_grad_input2,(0,3,1,2)))
+    save(base_name+"_goldenKernelGrad2.out", np.transpose(golden_grad_kernel2,(3,2,0,1)))
+    save(base_name+"_goldenBiasGrad2.out", golden_grad_bias2)
+
+def gen_test_case_conv_int(base_name):
+    x=gen_input(base_name+"_conv2DLayer.in", [1, 3, 28, 28], int_data=True)
+    kernel=gen_input(base_name+"_conv2DKernel.in", [6, 3, 5, 5], int_data=True)
+    bias = np.ones(6)
+    with open(base_name+"_conv2DKernel.in", 'ab') as outfile:
+        np.array(bias, dtype=np.float32).tofile(outfile)
+    kernel2=gen_input(base_name+"_conv2DKernel2.in", [12, 6, 1, 1], int_data=True)
+    bias2 = np.ones(12)
+    with open(base_name+"_conv2DKernel2.in", 'ab') as outfile:
+        np.array(bias2, dtype=np.float32).tofile(outfile)
+
+    golden_conv, golden_conv2, golden_grads = conv2d_tf_2(x, kernel, bias, kernel2, bias2)
+    save(base_name+"_goldenConv2DResult.out", np.transpose(golden_conv,(0,3,1,2)))
+    save(base_name+"_goldenConv2DResult2.out", np.transpose(golden_conv2,(0,3,1,2)))
+    save(base_name+"_goldenInputGrad.out", np.transpose(golden_grads[0],(0,3,1,2)))
+    save(base_name+"_goldenKernelGrad.out", np.transpose(golden_grads[1],(3,2,0,1)))
+    save(base_name+"_goldenBiasGrad.out", golden_grads[2])
+    save(base_name+"_goldenKernel2Grad.out", np.transpose(golden_grads[3],(3,2,0,1)))
+    save(base_name+"_goldenBias2Grad.out", golden_grads[4])
+
+def gen_test_case_conv_3(base_name):
+    x=gen_input(base_name+"_conv2DLayer.in", [1, 6, 24, 24], int_data=True)
+    kernel=gen_input(base_name+"_conv2DKernel.in", [12, 6, 5, 5], int_data=True)
+    bias = np.ones(12)
+    with open(base_name+"_conv2DKernel.in", 'ab') as outfile:
+        np.array(bias, dtype=np.float32).tofile(outfile)
+
+    golden_conv, golden_grads = conv2d_tf_2(x, kernel, bias, kernel, bias)
+    save(base_name+"_goldenConv2DResult.out", np.transpose(golden_conv,(0,3,1,2)))
+    save(base_name+"_goldenInputGrad.out", np.transpose(golden_grads[0],(0,3,1,2)))
+    save(base_name+"_goldenKernelGrad.out", np.transpose(golden_grads[1],(3,2,0,1)))
+    save(base_name+"_goldenBiasGrad.out", golden_grads[2])
 
 def gen_test_case_pooling(input_shape, pool_size, stride, padding, pooling, base_name, gen_in):
     if gen_in:
@@ -491,6 +590,12 @@ if __name__ == "__main__":
     if target == "conv2d_2":
         bias2 = [0.0, 0.0, 0.0]
         gen_test_case_conv(2, 3, 7, 7, 3, 3, 3, "VALID", 1, bias2, "tc_conv2d_2")
+
+    if target == "conv2d_int":
+        gen_test_case_conv_int("tc_conv2d_int")
+
+    if target == "conv2d_int_2":
+        gen_test_case_conv_3("tc_conv2d_3")
 
 # FC layer unit test case:
     if target == "fc_1":

@@ -359,8 +359,10 @@ int Conv2DLayer::conv2d(float *in, TensorDim indim, const float *kernel,
       for (unsigned int i = 0; i < channel; ++i) {
         for (unsigned int ki = 0; ki < k_height; ++ki) {
           for (unsigned int kj = 0; kj < k_width; ++kj) {
-            sum += kernel[i * k_height * k_width + ki * k_width + kj] *
-                   in[i * height * width + (j + ki) * width + (k + kj)];
+            float kern_value = kernel[i * k_height * k_width + ki * k_width + kj];
+            float in_value = in[i * height * width + (j + ki) * width + (k + kj)];
+            float add_val = kern_value * in_value;
+            sum += add_val;
           }
         }
       }

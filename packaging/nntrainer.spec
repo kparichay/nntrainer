@@ -199,8 +199,8 @@ bash %{test_script} ./test
 export NNSTREAMER_CONF=$(pwd)/test/nnstreamer_filter_nntrainer/nnstreamer-test.ini
 export NNSTREAMER_FILTERS=$(pwd)/build/nnstreamer/tensor_filter
 pushd build
-TF_APP=Applications/TransferLearning/Draw_Classification
-./${TF_APP}/jni/nntrainer_training ../${TF_APP}/res/Training.ini ../${TF_APP}/res
+# TF_APP=Applications/TransferLearning/Draw_Classification
+# ./${TF_APP}/jni/nntrainer_training ../${TF_APP}/res/Training.ini ../${TF_APP}/res
 popd
 
 # unittest for nntrainer plugin for nnstreamer

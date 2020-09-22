@@ -67,7 +67,7 @@ typedef struct RunStats_ {
  * @brief   NeuralNetwork Class which has Network Configuration & Layers
  */
 class NeuralNetwork {
-  friend class ModelLoader;
+  friend class ModelLoader; /** access private members of ModelLoader */
 
 public:
   /**
@@ -91,29 +91,7 @@ public:
   /**
    * @brief     Destructor of NeuralNetwork Class
    */
-  ~NeuralNetwork() {}
-
-  friend void swap(NeuralNetwork &lhs, NeuralNetwork &rhs) {
-    using std::swap;
-
-    swap(lhs.batch_size, rhs.batch_size);
-    swap(lhs.epochs, rhs.epochs);
-    swap(lhs.loss, rhs.loss);
-    swap(lhs.loss_type, rhs.loss_type);
-    swap(lhs.weight_initializer, rhs.weight_initializer);
-    swap(lhs.save_path, rhs.save_path);
-    swap(lhs.opt, rhs.opt);
-    swap(lhs.net_type, rhs.net_type);
-    swap(lhs.layers, rhs.layers);
-    swap(lhs.data_buffer, rhs.data_buffer);
-    swap(lhs.continue_train, rhs.continue_train);
-    swap(lhs.iter, rhs.iter);
-    swap(lhs.initialized, rhs.initialized);
-    swap(lhs.layer_names, rhs.layer_names);
-    swap(lhs.def_name_count, rhs.def_name_count);
-    swap(lhs.loadedFromConfig, rhs.loadedFromConfig);
-    swap(lhs.is_train, rhs.is_train);
-  }
+  ~NeuralNetwork();
 
   /**
    * @brief     Get Loss
@@ -122,22 +100,10 @@ public:
   float getLoss();
 
   /**
-   * @brief     Set Optimizer
-   * @retval    Optimizer
-   */
-  void setOptimizer(Optimizer optimizer) { opt = optimizer; };
-
-  /**
    * @brief     Get Learning rate
    * @retval    Learning rate
    */
   float getLearningRate() { return opt.getLearningRate(); };
-
-  /**
-   * @brief     Set Loss
-   * @param[in] l loss value
-   */
-  void setLoss(float l);
 
   /**
    * @brief     Create and load the Network with ini configuration file.
@@ -156,46 +122,12 @@ public:
   int setProperty(std::vector<std::string> values);
 
   /**
-   * @brief     set Property/Configuration of Network for training after the
-   * network has been initialized
-   * @param[in] values values of property
-   * @retval #ML_ERROR_NONE Successful.
-   * @retval #ML_ERROR_INVALID_PARAMETER invalid parameter.
-   */
-  int setTrainConfig(std::vector<std::string> values);
-
-  /**
    * @brief     Initialize Network. This should be called after set all
    * hyperparameters.
    * @retval #ML_ERROR_NONE Successful.
    * @retval #ML_ERROR_INVALID_PARAMETER invalid parameter.
    */
   int init();
-
-  /**
-   * @brief     Forward Propagation of the neural network
-   * @param[in] input List of Input Tensors taken by the neural network
-   * @retval    List of Output Tensors
-   */
-  sharedConstTensor forwarding(sharedConstTensor input);
-
-  /**
-   * @brief     Forward Propagation of the neural network
-   * @param[in] input List of Input Tensors taken by the neural network
-   * @param[in] label List of Label Tensors for the model
-   * @retval    List of Output Tensors
-   */
-  sharedConstTensor forwarding(sharedConstTensor input,
-                               sharedConstTensor label);
-
-  /**
-   * @brief     Backward Propagation of the neural network
-   * @param[in] input List of Input Tensors taken by the neural network
-   * @param[in] label List of Label Tensors for the model
-   * @param[in] iteration Iteration Number for the optimizer
-   */
-  void backwarding(sharedConstTensor input, sharedConstTensor label,
-                   int iteration);
 
   /**
    * @brief     save model and training parameters into file
@@ -221,31 +153,12 @@ public:
   NeuralNetwork &copy(NeuralNetwork &from);
 
   /**
-   * @brief     finalize NeuralNetwork Object
-   */
-  void finalize();
-
-  /**
-   * @brief     Run NeuralNetwork train
-   * @retval #ML_ERROR_NONE Successful.
-   * @retval #ML_ERROR_INVALID_PARAMETER invalid parameter.
-   */
-  int train_run();
-
-  /**
-   * @brief     Run NeuralNetwork train
-   * @retval #ML_ERROR_NONE Successful.
-   * @retval #ML_ERROR_INVALID_PARAMETER invalid parameter.
-   */
-  int train();
-
-  /**
    * @brief     Run NeuralNetwork train
    * @param[in] values hyper parameters
    * @retval #ML_ERROR_NONE Successful.
    * @retval #ML_ERROR_INVALID_PARAMETER invalid parameter.
    */
-  int train(std::vector<std::string> values);
+  int train(std::vector<std::string> values = {});
 
   /**
    * @brief     Run NeuralNetwork inference
@@ -269,23 +182,10 @@ public:
   int setDataBuffer(std::shared_ptr<DataBuffer> data_buffer);
 
   /**
-   * @brief     check neural network is ready to init.
-   * @retval #ML_ERROR_NONE neuralnetwork is ready to init
-   * @retval #ML_ERROR_INVALID_PARAMETER not ready to init.
-   */
-  int isInitializable();
-
-  /**
    * @brief     check train or inference. Default is True (train)
    * @retval bool True : training Mode. False : Inference Mode
    */
   bool isTrain() { return is_train; };
-
-  /**
-   * @param[in] train true for train mode. false for inference mode
-   * @brief     set Running Mode : Train or Inference
-   */
-  void setMode(bool train) { is_train = train; };
 
   /**
    * @brief     add layer into neural network model
@@ -404,6 +304,57 @@ private:
   int initLossLayer();
 
   /**
+   * @brief     Set Loss
+   * @param[in] l loss value
+   */
+  void setLoss(float l);
+
+  /**
+   * @brief     Forward Propagation of the neural network
+   * @param[in] input List of Input Tensors taken by the neural network
+   * @retval    List of Output Tensors
+   */
+  sharedConstTensor forwarding(sharedConstTensor input);
+
+  /**
+   * @brief     Forward Propagation of the neural network
+   * @param[in] input List of Input Tensors taken by the neural network
+   * @param[in] label List of Label Tensors for the model
+   * @retval    List of Output Tensors
+   */
+  sharedConstTensor forwarding(sharedConstTensor input,
+                               sharedConstTensor label);
+
+  /**
+   * @brief     Backward Propagation of the neural network
+   * @param[in] input List of Input Tensors taken by the neural network
+   * @param[in] label List of Label Tensors for the model
+   * @param[in] iteration Iteration Number for the optimizer
+   */
+  void backwarding(sharedConstTensor input, sharedConstTensor label,
+                   int iteration);
+
+  /**
+   * @brief     Run NeuralNetwork train
+   * @retval #ML_ERROR_NONE Successful.
+   * @retval #ML_ERROR_INVALID_PARAMETER invalid parameter.
+   */
+  int train_run();
+
+  /**
+   * @brief     check neural network is ready to init.
+   * @retval #ML_ERROR_NONE neuralnetwork is ready to init
+   * @retval #ML_ERROR_INVALID_PARAMETER not ready to init.
+   */
+  int isInitializable();
+
+  /**
+   * @param[in] train true for train mode. false for inference mode
+   * @brief     set Running Mode : Train or Inference
+   */
+  void setMode(bool train) { is_train = train; };
+
+  /**
    * @brief     Realize act type to layer and insert it to layers
    * @param[in] ActiType act Activation Type
    * @param[in] int Position position to insert activation layer.
@@ -434,6 +385,37 @@ private:
    * @brief     Ensure that layer has a name
    */
   void ensureName(std::shared_ptr<Layer> layer, std::string prefix = "");
+
+  friend void swap(NeuralNetwork &lhs, NeuralNetwork &rhs) {
+    using std::swap;
+
+    swap(lhs.batch_size, rhs.batch_size);
+    swap(lhs.epochs, rhs.epochs);
+    swap(lhs.loss, rhs.loss);
+    swap(lhs.loss_type, rhs.loss_type);
+    swap(lhs.weight_initializer, rhs.weight_initializer);
+    swap(lhs.save_path, rhs.save_path);
+    swap(lhs.opt, rhs.opt);
+    swap(lhs.net_type, rhs.net_type);
+    swap(lhs.layers, rhs.layers);
+    swap(lhs.data_buffer, rhs.data_buffer);
+    swap(lhs.continue_train, rhs.continue_train);
+    swap(lhs.iter, rhs.iter);
+    swap(lhs.initialized, rhs.initialized);
+    swap(lhs.layer_names, rhs.layer_names);
+    swap(lhs.def_name_count, rhs.def_name_count);
+    swap(lhs.loadedFromConfig, rhs.loadedFromConfig);
+    swap(lhs.is_train, rhs.is_train);
+  }
+
+  /**
+   * @brief     set Property/Configuration of Network for training after the
+   * network has been initialized
+   * @param[in] values values of property
+   * @retval #ML_ERROR_NONE Successful.
+   * @retval #ML_ERROR_INVALID_PARAMETER invalid parameter.
+   */
+  int setTrainConfig(std::vector<std::string> values);
 };
 
 } /* namespace nntrainer */

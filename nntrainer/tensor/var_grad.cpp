@@ -16,27 +16,27 @@
 
 namespace nntrainer {
 
-Var_Grad::Var_Grad(const Var_Grad &rhs) :
-  trainable(rhs.trainable),
-  name(rhs.name) {
-  var = rhs.var.clone();
-  grad = rhs.grad.clone();
-}
-
-Var_Grad &Var_Grad::operator=(const Var_Grad &rhs) {
-  Var_Grad temp(rhs);
-  swap(temp, *this);
-  return *this;
-}
+// Var_Grad::Var_Grad(const Var_Grad &rhs) :
+//   trainable(rhs.trainable),
+//   name(rhs.name) {
+//   var = std::make_shared<Tensor>(rhs.getVariable().clone());
+//   grad = std::make_shared<Tensor>(rhs.getGradient().clone());
+// }
+//
+// Var_Grad &Var_Grad::operator=(const Var_Grad &rhs) {
+//   Var_Grad temp(rhs);
+//   swap(temp, *this);
+//   return *this;
+// }
 
 Var_Grad::Var_Grad(const TensorDim &dim, bool train, const std::string &name) :
   trainable(train),
   name(name) {
-  var = Tensor(dim);
+  var = std::make_shared<Tensor>(dim);
 
-  grad = Tensor();
+  grad = std::make_shared<Tensor>();
   if (trainable) {
-    grad = Tensor(dim);
+    grad = std::make_shared<Tensor>(dim);
   }
   resetGradient();
 }

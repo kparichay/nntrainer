@@ -59,19 +59,22 @@ int BatchNormalizationLayer::initialize(Manager &manager) {
       axes_to_reduce.push_back(i);
   }
 
-  setNumWeights(4);
-  weightAt(BNParams::mu) =
-    std::move(Weight(dim, initializers[BNParams::mu], false, "BN:moving_mean"));
-  ///@todo shift var to std to save computation
-  weightAt(BNParams::var) = std::move(
-    Weight(dim, initializers[BNParams::var], false, "BN:moving_variance"));
-  weightAt(BNParams::gamma) =
-    std::move(Weight(dim, initializers[BNParams::gamma], true, "BN:gamma"));
-  weightAt(BNParams::beta) =
-    std::move(Weight(dim, initializers[BNParams::beta], true, "BN:beta"));
-
-  manager.trackWeights({weightAt(BNParams::mu), weightAt(BNParams::var),
-                        weightAt(BNParams::gamma), weightAt(BNParams::beta)});
+  weights.clear();
+  if (weights.empty()) {
+    weights.reserve(4);
+    weights.emplace_back(dim, initializers[BNParams::mu], false,
+                         "BN::moving_mean");
+    weights.emplace_back(dim, initializers[BNParams::var], false,
+                         "BN::moving_variance");
+    weights.emplace_back(dim, initializers[BNParams::gamma], true, "BN::gamma");
+    weights.emplace_back(dim, initializers[BNParams::beta], true, "BN::beta");
+    manager.trackWeights(weights);
+  } else {
+    weights[BNParams::mu].reset(dim, initializers[BNParams::mu], false);
+    weights[BNParams::var].reset(dim, initializers[BNParams::var], false);
+    weights[BNParams::gamma].reset(dim, initializers[BNParams::gamma], true);
+    weights[BNParams::beta].reset(dim, initializers[BNParams::beta], true);
+  }
 
   return status;
 }

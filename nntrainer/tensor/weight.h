@@ -81,7 +81,7 @@ public:
   /**
    * @brief Allocate and initialize the weight variable
    */
-  void initializeWeight();
+  void initialize();
 
   /**
    * @brief Swap for weight
@@ -127,16 +127,33 @@ public:
   Weight &operator=(Weight &&rhs) = default;
 
   /**
-   * @bried Clone the currnet object
+   * @brief Clone the currnet object
    *
    * @return Cloned copy
    */
-  Weight clone() {
+  Weight clone() const {
     Weight w(*this);
-    w.var = std::make_shared<Tensor>(this->var->clone());
-    w.grad = std::make_shared<Tensor>(this->grad->clone());
+    if (!this->var->uninitialized()) {
+      w.var = std::make_shared<Tensor>(this->var->clone());
+      w.grad = std::make_shared<Tensor>(this->grad->clone());
+    }
 
     return w;
+  }
+
+  /**
+   * @brief Reset the weight
+   *
+   * @param dim Variable and gradient tensor dimension
+   * @param init Initializer for the tensor
+   * @param train If the variable is trainable
+   *
+   * @note New dimension must maintain the shape of the variable
+   */
+
+  void reset(const TensorDim &dim, const WeightInitializer init, bool train) {
+    initializer = init;
+    Var_Grad::reset(dim, train);
   }
 
 private:

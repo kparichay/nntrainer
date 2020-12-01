@@ -91,11 +91,16 @@ public:
   Var_Grad &operator=(Var_Grad &&rhs) = default;
 
   /**
+   * @brief Allocate and initialize the weight variable
+   */
+  virtual void initialize();
+
+  /**
    * @brief Get the TensorDim
    *
    * @return TensorDim Dimension
    */
-  TensorDim getDim() const { return var->getDim(); }
+  TensorDim getDim() const { return dim; }
 
   /**
    * @brief Get if the Var_Grad is trainable
@@ -138,13 +143,32 @@ public:
    *
    * @return Cloned copy
    */
-  virtual Var_Grad clone() const {
+  Var_Grad clone() const {
     Var_Grad vg(*this);
     vg.var = std::make_shared<Tensor>(this->var->clone());
     vg.grad = std::make_shared<Tensor>(this->grad->clone());
 
     return vg;
   };
+
+  /**
+   * @brief Reset the weight
+   *
+   * @param dim Variable and gradient tensor dimension
+   * @param train If the variable is trainable
+   *
+   * @note New dimension must maintain the shape of the variable
+   */
+
+  void reset(const TensorDim &tdim, bool train) {
+    dim = tdim;
+    if (!var->uninitialized())
+      var->reshape(dim);
+    if (!grad->uninitialized())
+      grad->reshape(dim);
+    trainable = train;
+    resetGradient();
+  }
 
 protected:
   /**
@@ -161,6 +185,7 @@ protected:
    */
   Tensor &getGradientRef() { return *grad.get(); }
 
+  TensorDim dim;                /**< dimension of the tensor */
   std::shared_ptr<Tensor> var;  /**< variable to be updated and used */
   std::shared_ptr<Tensor> grad; /**< gradient for the variable */
   bool trainable;               /**< if this variable is trainable */

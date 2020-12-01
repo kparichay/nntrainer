@@ -79,6 +79,8 @@ protected:
       layer.setOutputBuffer(i, n_buffer);
     }
 
+    manager.initialize();
+
     return status;
   }
 
@@ -95,7 +97,10 @@ protected:
   // anchor point to prepare layer
   virtual void prepareLayer(){};
 
-  virtual void resetLayer() { layer = LayerType(); }
+  virtual void resetLayer() {
+    layer = LayerType();
+    manager.reset();
+  }
 
   virtual void setInputDim(const std::string &dimension) {
     ASSERT_EQ(layer.setProperty({"input_shape=" + dimension}), ML_ERROR_NONE);
@@ -646,12 +651,12 @@ protected:
   }
 
   void matchUpdatedWeightsGradients() {
-    std::shared_ptr<nntrainer::Weight> params = layer.getWeights();
+    std::vector<nntrainer::Weight> params = layer.getWeights();
 
     /** Match gradients and updated weights */
     for (int idx = 0; idx < 2; ++idx) {
-      matchOutput(params.get()[idx].getGradient(), grad[idx]);
-      matchOutput(params.get()[idx].getVariable(), new_w[idx]);
+      matchOutput(params[idx].getGradient(), grad[idx]);
+      matchOutput(params[idx].getVariable(), new_w[idx]);
     }
   }
 
@@ -687,7 +692,7 @@ TEST_F(nntrainer_FullyConnectedLayer_TFmatch,
 
   matchOutput(result, "tc_fc_1_goldenFCGradientAdam.out");
 
-  nntrainer::Weight *param_data = layer.getWeights().get();
+  auto param_data = layer.getWeights();
 
   nntrainer::Weight &param = param_data[0];
   nntrainer::Tensor weight = param.getVariable();
@@ -1188,7 +1193,7 @@ TEST_F(nntrainer_Conv2DLayer, backwarding_01_p) {
   EXPECT_NO_THROW(result = *layer.backwarding_with_val(
                     1, {MAKE_SHARED_TENSOR(derivatives)})[0]);
 
-  nntrainer::Weight *param_data = layer.getWeights().get();
+  auto param_data = layer.getWeights();
   const float *weight_grad = param_data[0].getGradient().getData();
   const float *bias_grad = param_data[1].getGradient().getData();
 
@@ -1225,7 +1230,7 @@ TEST_F(nntrainer_Conv2DLayer, backwarding_02_p) {
   EXPECT_NO_THROW(result = *layer.backwarding_with_val(
                     1, {MAKE_SHARED_TENSOR(derivatives)})[0]);
 
-  nntrainer::Weight *param_data = layer.getWeights().get();
+  auto param_data = layer.getWeights();
   const float *weight_grad = param_data[0].getGradient().getData();
   const float *bias_grad = param_data[1].getGradient().getData();
 
@@ -1331,7 +1336,7 @@ TEST_F(nntrainer_Conv2DLayer, DISABLED_backwarding_03_p) {
     result = *layer1.backwarding_with_val(1, {MAKE_SHARED_TENSOR(result2)})[0]);
 
   /** Compare second conv */
-  nntrainer::Weight *param_data = layer2.getWeights().get();
+  auto param_data = layer2.getWeights();
   const float *weight_grad = param_data[0].getGradient().getData();
   const float *bias_grad = param_data[1].getGradient().getData();
 
@@ -1339,7 +1344,7 @@ TEST_F(nntrainer_Conv2DLayer, DISABLED_backwarding_03_p) {
   matchOutput(bias_grad, "tc_conv2d_int_goldenBias2Grad.out");
 
   /** Compare first conv */
-  param_data = layer1.getWeights().get();
+  param_data = layer1.getWeights();
   weight_grad = param_data[0].getGradient().getData();
   bias_grad = param_data[1].getGradient().getData();
 
@@ -1374,7 +1379,7 @@ TEST_F(nntrainer_Conv2DLayer, backwarding_04_p) {
   EXPECT_NO_THROW(result = *layer.backwarding_with_val(
                     1, {MAKE_SHARED_TENSOR(derivatives)})[0]);
 
-  nntrainer::Weight *param_data = layer.getWeights().get();
+  auto param_data = layer.getWeights();
   const float *weight_grad = param_data[0].getGradient().getData();
   const float *bias_grad = param_data[1].getGradient().getData();
 

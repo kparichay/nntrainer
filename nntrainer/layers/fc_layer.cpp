@@ -52,12 +52,15 @@ int FullyConnectedLayer::initialize(Manager &manager) {
   dim.height(input_dim[0].width());
   dim.batch(1);
 
-  setNumWeights(2);
-  weightAt(FCParams::weight) =
-    Weight(dim, weight_initializer, true, "FC:weight");
-  weightAt(FCParams::bias) =
-    Weight(bias_dim, bias_initializer, true, "FC::bias");
-  manager.trackWeights({weightAt(FCParams::weight), weightAt(FCParams::bias)});
+  if (weights.empty()) {
+    weights.reserve(2);
+    weights.emplace_back(dim, weight_initializer, true, "FC:weight");
+    weights.emplace_back(bias_dim, bias_initializer, true, "FC:bias");
+    manager.trackWeights(weights);
+  } else {
+    weights[FCParams::weight].reset(dim, weight_initializer, true);
+    weights[FCParams::bias].reset(bias_dim, bias_initializer, true);
+  }
 
   return status;
 }

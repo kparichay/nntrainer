@@ -276,6 +276,11 @@ void NodeWatcher::backward(int iteration, bool should_verify) {
 
 GraphWatcher::GraphWatcher(const std::string &config) {
   nn = nntrainer::NeuralNetwork();
+
+  /** Disable gradient optimization as gradient is being matched for each layer
+   */
+  nn.setGradientMemoryOptimization(false);
+
   if (nn.loadFromConfig(config)) {
     throw std::invalid_argument("load from config failed!");
   };

@@ -81,7 +81,7 @@ public:
   /**
    * @brief Allocate and initialize the weight variable
    */
-  void initialize();
+  void initialize(const Tensor &grad_shared = Tensor());
 
   /**
    * @brief Swap for weight

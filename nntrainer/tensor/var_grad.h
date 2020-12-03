@@ -40,7 +40,7 @@ public:
    * @brief Construct a new Var_Grad object
    *
    * @param dim Variable and gradient tensor dimension
-   * @param train If the variable is trainable
+   * @param train If the variable is trainable. If not trainable, gradient will not be allocated.
    * @param name Name for this Var_Grad
    */
   Var_Grad(const TensorDim &dim, bool train = true,
@@ -194,7 +194,7 @@ protected:
   TensorDim dim;                /**< dimension of the tensor */
   std::shared_ptr<Tensor> var;  /**< variable to be updated and used */
   std::shared_ptr<Tensor> grad; /**< gradient for the variable */
-  bool trainable;               /**< if this variable is trainable */
+  bool trainable;               /**< if this variable is trainable, gradient will not be allocated for non-trainables */
   std::string name;             /**< name of the parameter */
 };
 

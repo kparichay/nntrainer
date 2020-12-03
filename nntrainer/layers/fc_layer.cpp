@@ -52,6 +52,7 @@ int FullyConnectedLayer::initialize(Manager &manager) {
   dim.height(input_dim[0].width());
   dim.batch(1);
 
+  /** Layer allocates weights and registers with manager */
   if (weights.empty()) {
     weights.reserve(2);
     weights.emplace_back(dim, weight_initializer, true, "FC:weight");

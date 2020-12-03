@@ -383,19 +383,8 @@ protected:
   bool isWeightRegularizerL2Norm() {
     return weight_regularizer == WeightRegularizerType::l2norm;
   }
-  /**
-   * @brief     Input Tensor
-   */
-  Tensor input;
 
   std::vector<std::shared_ptr<NetBuffers>> net_input;
-
-  /**
-   * @brief     Hidden Layer Tensor which store the
-   *            forwading result
-   */
-  Tensor hidden;
-  Tensor ret_derivative; /** derivative to be returned to previous layer */
 
   std::vector<std::shared_ptr<NetBuffers>> net_hidden;
 

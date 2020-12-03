@@ -85,8 +85,6 @@ void Layer::copy(std::shared_ptr<Layer> l) {
   this->opt = l->opt;
   this->input_dim = l->input_dim;
   this->output_dim = l->output_dim;
-  this->input.copy(l->input);
-  this->hidden.copy(l->hidden);
   this->activation_type = l->activation_type;
   this->loss = l->loss;
   this->weight_regularizer = l->weight_regularizer;

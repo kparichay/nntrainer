@@ -81,12 +81,7 @@ void Conv2DLayer::forwarding(sharedConstTensors in) {
 
   TensorDim &in_dim = input_dim[0];
   TensorDim &out_dim = output_dim[0];
-
   Tensor &hidden_ = net_hidden[0]->var;
-  /** @todo This check is redundant, remove it later */
-  if (hidden_.uninitialized()) {
-    hidden_ = Tensor(out_dim);
-  }
 
   Tensor &filter_kernel = weightAt(ConvParams::weight).getVariableRef();
   Tensor &bias_kernel = weightAt(ConvParams::bias).getVariableRef();
@@ -201,9 +196,6 @@ void Conv2DLayer::calcDerivative(sharedConstTensors derivatives) {
    */
   using uint = unsigned int;
   bool no_padding = padding[0] == 0 && padding[1] == 0;
-
-  if (net_input[0]->var.uninitialized())
-    net_input[0]->var = Tensor(input.getDim());
 
   Tensor ret;
   if (no_padding)

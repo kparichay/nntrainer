@@ -449,19 +449,8 @@ int NetworkGraph::setGraphNode(std::vector<std::shared_ptr<Layer>> &layers,
 
 void NetworkGraph::setNumNetBufferSize() {
   for (unsigned int i = 0; i < Sorted.size(); ++i) {
-    bool first = i == 0;
-    bool last = i == Sorted.size() - 1;
-    if (first) {
-      Sorted[i].layer->net_input.resize(Sorted[i].layer->num_inputs);
-    } else {
       Sorted[i].layer->net_input.resize(Sorted[i].layer->input_layers.size());
-    }
-
-    if (last) {
-      Sorted[i].layer->net_hidden.resize(Sorted[i].layer->num_outputs);
-    } else {
       Sorted[i].layer->net_hidden.resize(Sorted[i].layer->output_layers.size());
-    }
   }
 }
 

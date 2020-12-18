@@ -1673,8 +1673,11 @@ TEST(nntrainer_LossLayer, forward_loss_unknown_n) {
   nntrainer::LossLayer layer;
   nntrainer::Tensor a = constant(1.0, 1, 1, 1, 1);
   nntrainer::Tensor b = constant(1.0, 1, 1, 1, 1);
+  layer.setProperty({"input_shape=1:1:1:1"});
 
   nntrainer::Manager manager;
+  layer.initialize(manager);
+
   manager.TrackLayerInOuts(layer.getName(), layer.getInputDimension());
   layer.setInputBuffers(manager.getInputsLayer(-1));
   manager.TrackLayerInOuts(layer.getName(), layer.getOutputDimension());
@@ -1705,8 +1708,11 @@ TEST(nntrainer_LossLayer, forward_loss_forward_entropy_n) {
   layer.setLoss(nntrainer::LossType::LOSS_ENTROPY);
   nntrainer::Tensor a = constant(1.0, 1, 1, 1, 1);
   nntrainer::Tensor b = constant(1.0, 1, 1, 1, 1);
+  layer.setProperty({"input_shape=1:1:1:1"});
 
   nntrainer::Manager manager;
+  layer.initialize(manager);
+
   manager.TrackLayerInOuts(layer.getName(), layer.getInputDimension());
   layer.setInputBuffers(manager.getInputsLayer(-1));
   manager.TrackLayerInOuts(layer.getName(), layer.getOutputDimension());
@@ -1812,12 +1818,20 @@ TEST(nntrainer_ActivationLayer, forward_backward_01_p) {
   GEN_TEST_INPUT(expected,
                  nntrainer::ActivationLayer::relu((l - 4) * 0.1 * (i + 1)));
 
+  std::stringstream ss;
+  ss << "input_shape=" << batch << ":" << channel << ":" << height << ":"
+     << width;
+  layer.setProperty({ss.str()});
+
   nntrainer::Manager manager;
+  layer.initialize(manager);
+
   manager.TrackLayerInOuts(layer.getName(), layer.getInputDimension());
   layer.setInputBuffers(manager.getInputsLayer(-1));
   manager.TrackLayerInOuts(layer.getName(), layer.getOutputDimension());
   layer.setOutputBuffers(manager.getInputsLayer(-1));
 
+  manager.setBatchSize(batch);
   manager.initializeInOuts(true);
 
   nntrainer::Tensor result;

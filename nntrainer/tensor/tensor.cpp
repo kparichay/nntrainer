@@ -124,7 +124,8 @@ void Tensor::setValue(unsigned int batch, unsigned int c, unsigned int h,
     throw std::runtime_error("cannot set value of non-contiguous tensor");
   }
 
-  getData()[getIndex(batch, c, h, w)] = value;
+  int idx = getIndex(batch, c, h, w);
+  getData()[idx] = value;
 }
 
 template <typename T> void Tensor::setDist(T dist) {

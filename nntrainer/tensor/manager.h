@@ -128,11 +128,7 @@ public:
   /**
    * @brief Set the batch size for the inputs/outputs of the layers
    */
-  void setBatchSize(unsigned int batch) {
-    for (auto &in_out : in_outs)
-      for (auto &vg : in_out)
-        vg->setBatchSize(batch);
-  }
+  void setBatchSize(unsigned int batch);
 
 private:
   // TODO: ensure that names of these weights are unique

@@ -77,7 +77,7 @@ void Manager::TrackLayerInOuts(const std::string layer_name,
                                const std::vector<TensorDim> &input_dim,
                                bool trainable) {
   int cnt = 0;
-  auto base_name = layer_name + ":Input";
+  auto base_name = layer_name + ":InOut";
 
   size_t inout_derivative_size = 0;
 
@@ -100,16 +100,35 @@ void Manager::TrackLayerInOuts(const std::string layer_name,
  * @brief Initialize the inputs/outputs for the layer
  */
 void Manager::initializeInOuts(bool trainable) {
-  // TODO: remove assign mem and do this
+  Tensor shared_deriv;
+  if (max_derivative_size > 0 && enable_derivative_memory_opt)
+    shared_deriv = Tensor(max_derivative_size);
+
   for (auto &l_io : in_outs) {
+    size_t offset = 0;
     for (auto &io : l_io) {
-      if (enable_derivative_memory_opt) {
-        io->initializeShared();
+      if (io->getTrainable() && enable_derivative_memory_opt) {
+        io->initialize(shared_deriv.getSharedDataTensor(io->getDim(), offset),
+                       trainable);
+        offset += io->getDim().getDataLen() * trainable;
       } else {
         io->initialize(Tensor(), trainable);
       }
     }
   }
+}
+
+/**
+ * @brief Set the batch size for the inputs/outputs of the layers
+ */
+void Manager::setBatchSize(unsigned int batch) {
+  if (!in_outs.empty() && !in_outs[0].empty()) {
+    max_derivative_size /= in_outs[0][0]->getDim().batch();
+    max_derivative_size *= batch;
+  }
+  for (auto &in_out : in_outs)
+    for (auto &vg : in_out)
+      vg->setBatchSize(batch);
 }
 
 } // namespace nntrainer

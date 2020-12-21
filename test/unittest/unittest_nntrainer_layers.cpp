@@ -1692,8 +1692,10 @@ TEST(nntrainer_LossLayer, forward_loss_unknown_n) {
 TEST(nntrainer_LossLayer, backward_loss_unknown_n) {
   nntrainer::LossLayer layer;
   nntrainer::Tensor a = constant(1.0, 1, 1, 1, 1);
+  layer.setProperty({"input_shape=1:1:1:1"});
 
   nntrainer::Manager manager;
+  layer.initialize(manager);
   manager.TrackLayerInOuts(layer.getName(), layer.getInputDimension());
   layer.setInputBuffers(manager.getInputsLayer(-1));
   manager.TrackLayerInOuts(layer.getName(), layer.getOutputDimension());
@@ -1728,8 +1730,11 @@ TEST(nntrainer_LossLayer, backward_loss_backward_entropy_n) {
   nntrainer::LossLayer layer;
   layer.setLoss(nntrainer::LossType::LOSS_ENTROPY);
   nntrainer::Tensor a = constant(1.0, 1, 1, 1, 1);
+  layer.setProperty({"input_shape=1:1:1:1"});
 
   nntrainer::Manager manager;
+  layer.initialize(manager);
+
   manager.TrackLayerInOuts(layer.getName(), layer.getInputDimension());
   layer.setInputBuffers(manager.getInputsLayer(-1));
   manager.TrackLayerInOuts(layer.getName(), layer.getOutputDimension());

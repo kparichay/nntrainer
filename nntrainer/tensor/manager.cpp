@@ -96,6 +96,17 @@ void Manager::TrackLayerInOuts(const std::string layer_name,
   max_derivative_size = std::max(max_derivative_size, inout_derivative_size);
 }
 
+void Manager::untrackLayerInOuts(const std::string layer_name) {
+  auto var_name = layer_name + ":InOut" + std::to_string(0);
+
+  for (unsigned int cnt = 0; cnt < in_outs.size(); cnt ++) {
+    if (!in_outs[cnt].empty() && in_outs[cnt][0]->getName() == var_name) {
+      in_outs.erase(in_outs.begin() + cnt);
+      break;
+    }
+  }
+}
+
 /**
  * @brief Initialize the inputs/outputs for the layer
  */

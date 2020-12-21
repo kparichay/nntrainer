@@ -382,6 +382,8 @@ public:
     in_place_bn_layer_optimization = opt;
   }
 
+  void inPlaceActivationOptimization();
+
 /// @todo Make a more common class have this
 /// Maybe appcontext can have this?
 #ifdef PROFILE

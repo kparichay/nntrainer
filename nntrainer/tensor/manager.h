@@ -37,7 +37,8 @@ public:
   Manager() :
     max_weight_size(0),
     max_derivative_size(0),
-    enable_gradient_memory_opt(true) {}
+    enable_gradient_memory_opt(true),
+    enable_derivative_memory_opt(true) {}
 
   /**
    * @brief     Destructor of Manager
@@ -107,6 +108,8 @@ public:
   void TrackLayerInOuts(const std::string layer_name,
                         const std::vector<TensorDim> &input_dim,
                         bool trainable = true);
+
+  void untrackLayerInOuts(const std::string layer_name);
 
   /**
    * @brief Get input tensor list for a layer by index

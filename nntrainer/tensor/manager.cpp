@@ -72,6 +72,7 @@ void Manager::initialize() {
 
 /**
  * @brief Track the inputs/ouputs of the layer
+ * @note This assumes are layers are being tracked in sorted order of execution
  */
 void Manager::TrackLayerInOuts(const std::string layer_name,
                                const std::vector<TensorDim> &input_dim,
@@ -111,6 +112,26 @@ void Manager::untrackLayerInOuts(const std::string layer_name) {
  * @brief Initialize the inputs/outputs for the layer
  */
 void Manager::initializeInOuts(bool trainable) {
+  // Tensor shared_deriv;
+  // if (enable_derivative_memory_opt) {
+  //   max_derivative_size = 0;
+
+  //   size_t in_derivative_size = 0, out_derivative_size = 0;
+  //   for (unsigned int i = 0; i < in_outs.size(); i++) {
+  //     auto &l_io = in_outs[i];
+  //     in_derivative_size = 0;
+  //     for (auto &io : l_io) {
+  //       if (io->getTrainable())
+  //         in_out_derivative_size += io->getDim().getDataLen();
+  //     }
+
+  //     max_derivative_size = max(max_derivative_size, in_derivative_size + out_derivative_size);
+  //     out_derivative_size = in_derivative_size;
+  //   }
+
+  //   shared_deriv = Tensor(max_derivative_size);
+  // }
+
   Tensor shared_deriv;
   if (max_derivative_size > 0 && enable_derivative_memory_opt)
     shared_deriv = Tensor(max_derivative_size);

@@ -86,7 +86,7 @@ public:
    * @brief     Constructor of NeuralNetwork Class
    */
   NeuralNetwork(AppContext app_context_ = AppContext(AppContext::Global()),
-                bool bn_opt = true) :
+                bool bn_opt = true, bool act_opt = true) :
     batch_size(1),
     epochs(1),
     epoch_idx(0),
@@ -102,7 +102,8 @@ public:
     def_name_count(0),
     loadedFromConfig(false),
     app_context(app_context_),
-    in_place_bn_layer_optimization(bn_opt) {}
+    in_place_bn_layer_optimization(bn_opt),
+    in_place_activation_layer_optimization(act_opt) {}
 
   /**
    * @brief     Destructor of NeuralNetwork Class
@@ -373,6 +374,10 @@ public:
     manager.setGradientMemoryOptimization(opt);
   }
 
+  void setDerivativeMemoryOptimization(bool opt) {
+    manager.setDerivativeMemoryOptimization(opt);
+  }
+
   /**
    * @brief Enable in-place batch normalization layer operation
    * @param opt True to enable, else false
@@ -380,6 +385,10 @@ public:
    */
   void setInPlaceBNLayerOptimization(bool opt) {
     in_place_bn_layer_optimization = opt;
+  }
+
+  void setInPlaceActivationLayerOptimization(bool opt) {
+    in_place_activation_layer_optimization = opt;
   }
 
   void inPlaceActivationOptimization();
@@ -517,6 +526,8 @@ private:
                    subgraph */
 
   bool in_place_bn_layer_optimization; /**< Run batch normalization layer
+                                          in-place */
+  bool in_place_activation_layer_optimization; /**< Run activation layer
                                           in-place */
 
   /**

@@ -50,8 +50,6 @@ void ActivationLayer::forwarding(sharedConstTensors in) {
   Tensor &hidden_ = net_hidden[0]->getVariableRef();
   /// @note @a _act_fn is expected to work out of place and not modify @a input
   _act_fn(net_input[0]->getVariableRef(), hidden_);
-  if (activation_type == ActivationType::ACT_SOFTMAX)
-    backup_hidden = hidden_.clone();
 }
 
 void ActivationLayer::calcDerivative(sharedConstTensors derivative) {
@@ -59,9 +57,9 @@ void ActivationLayer::calcDerivative(sharedConstTensors derivative) {
   Tensor &ret = net_input[0]->getGradientRef();
 
   if (activation_type == ActivationType::ACT_SOFTMAX) {
-    ret = _act_prime_fn(backup_hidden, ret, deriv);
+    _act_prime_fn(net_hidden[0]->getVariableRef(), ret, deriv);
   } else {
-    ret = _act_prime_fn(net_input[0]->getVariableRef(), ret, deriv);
+    _act_prime_fn(net_input[0]->getVariableRef(), ret, deriv);
   }
 }
 

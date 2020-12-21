@@ -322,7 +322,8 @@ int NeuralNetwork::initialize() {
   if (in_place_bn_layer_optimization)
     inPlaceBatchNormOptimization();
 
-  inPlaceActivationOptimization();
+  if (in_place_activation_layer_optimization)
+    inPlaceActivationOptimization();
 
   manager.initialize();
 

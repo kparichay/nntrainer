@@ -156,8 +156,6 @@ private:
   std::function<Tensor &(Tensor const &, Tensor &, Tensor const &)>
     _act_prime_fn;
 
-  Tensor backup_hidden;
-
   /**
    * @brief setActivation by custom activation function
    * @note  apply derivative as this activation_prime_fn does not utilize

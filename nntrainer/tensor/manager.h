@@ -104,6 +104,7 @@ public:
    * @param[in] input_dim Dimension of the input for the layer
    * @param[in] trainable If the layer is trainable
    * @note Manager is kept independent from the layer object itself
+   * @note This assumes are layers are being tracked in sorted order of execution
    */
   void TrackLayerInOuts(const std::string layer_name,
                         const std::vector<TensorDim> &input_dim,

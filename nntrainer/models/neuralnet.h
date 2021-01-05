@@ -407,18 +407,18 @@ public:
    * "max" and "norm" for now
    */
   void enableDynamicTraining(
-    float threshold,
-    std::string op = DynamicTrainingOptimization::dft_opt_norm) {
-    dft_opt.setThreshold(threshold);
-    dft_opt.setOp(op);
+    float threshold, std::string op = DynamicTrainingOptimization::dft_opt_norm,
+    std::string mode = DynamicTrainingOptimization::dft_opt_mode_derivative) {
+    dynamic_training_opt.setThreshold(threshold);
+    dynamic_training_opt.setOp(op);
+    dynamic_training_opt.setMode(mode);
+    dynamic_training_opt.enable();
   }
 
   /**
    * @brief Disable dynamic fine-tuning optimization
    */
-  void disableDynamicFineTuning() {
-    dft_opt.setOp(DynamicTrainingOptimization::dft_opt_off);
-  }
+  void disableDynamicFineTuning() { dynamic_training_opt.disable(); }
 
 /// @todo Make a more common class have this
 /// Maybe appcontext can have this?
@@ -555,8 +555,8 @@ private:
   bool in_place_optimization; /**< Run batch normalization, activation, etc
                                  layers in-place */
 
-  DynamicTrainingOptimization dft_opt; /**< Dynamic fine-tuning optimization
-   mode. supported modes are "off", "max" and "norm" */
+  DynamicTrainingOptimization dynamic_training_opt; /**< Dynamic fine-tuning
+   optimization mode. supported modes are "max" and "norm" */
 
   /**
    * @brief print function for neuralnet
@@ -644,6 +644,16 @@ private:
    * @param path path to set as a save path
    */
   void setSavePath(const std::string &path);
+
+  /**
+   * @brief     Backward Propagation for the layer
+   * @param[in] layer Layer to backpropagate
+   * @param[in] iteration Iteration Number for the optimizer
+   * @param[in] calc_derivative If the derivative for previous layer must be
+   * calculated
+   */
+  void backwarding(std::shared_ptr<Layer> layer, int iteration,
+                   bool calc_derivative);
 };
 
 } /* namespace nntrainer */

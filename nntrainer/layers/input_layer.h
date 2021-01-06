@@ -27,6 +27,9 @@
 #include <layer_internal.h>
 #include <tensor.h>
 
+#include <opencv2/highgui/highgui.hpp>
+// #include <opencv2/imgproc.hpp>
+
 namespace nntrainer {
 
 /**
@@ -80,16 +83,16 @@ public:
   void forwarding();
 
   /**
-   * @copydoc Layer::calcDerivative()
-   */
-  void calcDerivative();
-
-  /**
-   * @brief     Initializer of Input Layer
+   * @brief     initialize layer
    * @retval #ML_ERROR_NONE Successful.
    * @retval #ML_ERROR_INVALID_PARAMETER invalid parameter.
    */
   int initialize(Manager &manager);
+
+  /**
+   * @copydoc Layer::calcDerivative()
+   */
+  void calcDerivative();
 
   /**
    * @copydoc Layer::setTrainable(bool train)
@@ -114,6 +117,14 @@ public:
 private:
   bool normalization;
   bool standardization;
+
+  std::mt19937 rng; /**< random number generator */
+  std::uniform_real_distribution<float>
+    flip_dist; /**< uniform random distribution */
+  std::uniform_real_distribution<float>
+    translate_dist; /**< uniform random distribution */
+  cv::Mat affine_transform_mat;
+  cv::Mat input_mat, output_mat;
 
   /**
    * @brief     set normalization

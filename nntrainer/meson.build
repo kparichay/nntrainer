@@ -13,13 +13,16 @@ else
   nntrainer_inc += include_directories ('../api/capi/include/platform')
 endif
 
+opencv_dep = dependency('opencv')
+
 # Dependencies
 nntrainer_base_deps=[
   blas_dep,
   iniparser_dep,
   libm_dep,
   libdl_dep,
-  thread_dep
+  thread_dep,
+  opencv_dep
 ]
 
 if build_platform == 'tizen'
@@ -81,4 +84,3 @@ nntrainer_dep = declare_dependency(link_with: nntrainer_lib,
 install_headers(nntrainer_headers,
   subdir: 'nntrainer'
 )
-

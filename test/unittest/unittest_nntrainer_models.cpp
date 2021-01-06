@@ -562,7 +562,7 @@ INI mnist_conv_cross(
   "mnist_conv_cross",
   {
     nn_base + "learning_rate=0.1 | optimizer=sgd | loss=cross | batch_size=3",
-    I("input") + input_base + "input_shape=2:4:5",
+    I("input") + input_base + "input_shape=3:4:5",
     I("conv2d_c1_layer") + conv_base + "kernel_size=3,4 | filters=2" +"input_layers=input",
     I("act_1") + sigmoid_base +"input_layers=conv2d_c1_layer",
     I("pool_1") + mnist_pooling+"input_layers=act_1",

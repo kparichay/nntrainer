@@ -343,6 +343,8 @@ void NeuralNetwork::backwarding(std::shared_ptr<Layer> layer, int iteration,
    * 2. calcDerivative
    * 3. applyGradient
    */
+  static double skip_grad_count = 0, total_count = 0;
+
   bool apply_gradient;
   /** If gradient optimization mode, then calculate gradient first */
   if (dynamic_training_opt.isGradientMode())
@@ -365,6 +367,16 @@ void NeuralNetwork::backwarding(std::shared_ptr<Layer> layer, int iteration,
 
   if (apply_gradient)
     opt->apply_gradients(layer->getWeightsRef(), iteration);
+
+  if (!layer->getWeightsRef().empty()) {
+    total_count += 1;
+    if (apply_gradient) {
+      std::cout << "Grad applied for " << layer->getName() << ", skipped ratio -> " << skip_grad_count/total_count << std::endl;
+    } else {
+      skip_grad_count += 1;
+      std::cout << "Grad skipped for " << layer->getName() << ", skipped ratio -> " << skip_grad_count/total_count << std::endl;
+    }
+  }
 }
 
 /**
@@ -440,7 +452,9 @@ void NeuralNetwork::saveModel() {
     return;
   }
 
-  std::ofstream model_file(save_path, std::ios::out | std::ios::binary);
+  std::string save_path_updated = save_path + "." + std::to_string(epoch_idx) + "."
+    + "dt" + std::to_string(dynamic_training_opt.getThreshold());
+  std::ofstream model_file(save_path_updated, std::ios::out | std::ios::binary);
 
   for (unsigned int i = 0; i < layers.size(); i++)
     layers[i]->save(model_file);
@@ -612,6 +626,7 @@ int NeuralNetwork::train_run() {
         std::cout << "#" << epoch_idx << "/" << epochs;
         data_buffer->displayProgress(count++, nntrainer::BufferType::BUF_TRAIN,
                                      getLoss());
+        std::cout << std::endl;
         training.loss += getLoss();
       } else {
         data_buffer->clear(nntrainer::BufferType::BUF_TRAIN);
@@ -627,47 +642,55 @@ int NeuralNetwork::train_run() {
 
     std::cout << "#" << epoch_idx << "/" << epochs
               << " - Training Loss: " << training.loss;
-
-    if (data_buffer->getValidation()[(int)nntrainer::BufferType::BUF_VAL]) {
-      int right = 0;
-      validation.loss = 0.0f;
-      unsigned int tcases = 0;
-
-      status = data_buffer->run(nntrainer::BufferType::BUF_VAL);
-      if (status != ML_ERROR_NONE) {
-        data_buffer->clear(BufferType::BUF_VAL);
-        return status;
-      }
-
-      while (true) {
-        if (data_buffer->getDataFromBuffer(nntrainer::BufferType::BUF_VAL,
-                                           in.getData(), label.getData())) {
-          forwarding();
-          auto model_out = output.argmax();
-          auto label_out = label.argmax();
-          for (unsigned int b = 0; b < batch_size; b++) {
-            if (model_out[b] == label_out[b])
-              right++;
-          }
-          validation.loss += getLoss();
-          tcases++;
-        } else {
-          data_buffer->clear(nntrainer::BufferType::BUF_VAL);
-          break;
-        }
-      }
-
-      if (tcases == 0) {
-        ml_loge("Error : 0 test cases");
-        status = ML_ERROR_INVALID_PARAMETER;
-        return status;
-      }
-      validation.loss /= (float)(tcases);
-      validation.accuracy = right / (float)(tcases * batch_size) * 100.0f;
-      std::cout << " >> [ Accuracy: " << validation.accuracy
-                << "% - Validation Loss : " << validation.loss << " ] ";
-    }
     std::cout << std::endl;
+  }
+
+  for (auto const &ln : model_graph.Sorted) {
+    ln.layer->setTrainable(false);
+  }
+  std::shared_ptr<InputLayer> in_layer = std::static_pointer_cast<InputLayer>(model_graph.Sorted[0].layer);
+  in_layer->disableAugmentation();
+
+  if (data_buffer->getValidation()[(int)nntrainer::BufferType::BUF_VAL]) {
+    int right = 0;
+    validation.loss = 0.0f;
+    unsigned int tcases = 0;
+
+    status = data_buffer->run(nntrainer::BufferType::BUF_VAL);
+    if (status != ML_ERROR_NONE) {
+      data_buffer->clear(BufferType::BUF_VAL);
+      return status;
+    }
+
+    while (true) {
+      if (data_buffer->getDataFromBuffer(nntrainer::BufferType::BUF_VAL,
+                                         in.getData(), label.getData())) {
+        forwarding();
+        auto model_out = output.argmax();
+        auto label_out = label.argmax();
+        for (unsigned int b = 0; b < batch_size; b++) {
+          if (model_out[b] == label_out[b])
+            right++;
+        }
+        validation.loss += getLoss();
+        tcases++;
+      } else {
+        data_buffer->clear(nntrainer::BufferType::BUF_VAL);
+        break;
+      }
+      std::cout << " >> [   " << tcases * batch_size << "   ] " << "Validation Accuracy: " <<
+        ((float)right) / (float)(tcases * batch_size) * 100.0f << "%" << std::endl;
+    }
+
+    if (tcases == 0) {
+      ml_loge("Error : 0 test cases");
+      status = ML_ERROR_INVALID_PARAMETER;
+      return status;
+    }
+    validation.loss /= (float)(tcases);
+    validation.accuracy = right / (float)(tcases * batch_size) * 100.0f;
+    std::cout << " >> [ Validation Accuracy: " << validation.accuracy
+              << "% - Validation Loss : " << validation.loss << " ] " << std::endl;
   }
 
   return status;

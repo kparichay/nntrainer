@@ -29,7 +29,8 @@ bool DynamicTrainingOptimization::checkIfApply(
   const std::vector<Weight> &weights, const std::shared_ptr<Var_Grad> input,
   const std::shared_ptr<Var_Grad> output, const std::shared_ptr<Optimizer> opt,
   int iteration) {
-  if (!enabled || iteration < skip_n_iterations)
+  // if (!enabled || iteration < skip_n_iterations)
+  if (!enabled)
     return true;
 
   std::vector<bool> apply;
@@ -38,8 +39,10 @@ bool DynamicTrainingOptimization::checkIfApply(
   for (auto const &weight : weights)
     apply.push_back(checkIfApply(weight, input, output, opt, iteration));
 
-  return std::accumulate(apply.begin(), apply.end(), true,
-                         std::logical_and<bool>());
+  // return std::accumulate(apply.begin(), apply.end(), true,
+  //                        std::logical_and<bool>());
+  return std::accumulate(apply.begin(), apply.end(), false,
+                         std::logical_or<bool>());
 }
 
 /**
@@ -50,15 +53,16 @@ bool DynamicTrainingOptimization::checkIfApply(
   const Weight &weight, const std::shared_ptr<Var_Grad> &input,
   const std::shared_ptr<Var_Grad> &output,
   const std::shared_ptr<Optimizer> &opt, int iteration) {
-  if (iteration < skip_n_iterations)
-    return true;
+  // if (iteration < skip_n_iterations)
+  //   return true;
 
   if (!weight.getTrainable() || weight.getGradientRef().uninitialized())
     return true;
 
   float reduced_ratio = calc_ratio_op(weight, input, output, reduce_op);
 
-  return checkIfApply(reduced_ratio, (float)opt->getLearningRate(iteration));
+  // return checkIfApply(reduced_ratio, (float)opt->getLearningRate(iteration));
+  return checkIfApply(reduced_ratio, (float)opt->getLearningRate());
 }
 
 /**
@@ -98,10 +102,12 @@ bool DynamicTrainingOptimization::checkIfApply(float reduced_ratio,
    * If the reduced update raito is less than 1, then apply it with
    * probability = update ratio
    */
-  if (dist(rng) < reduced_ratio * learning_rate / threshold)
-    return false;
+  float val1 = dist(rng);
+  float val2 = reduced_ratio * learning_rate / threshold;
+  if (val1 < val2)
+    return true;
 
-  return true;
+  return false;
 }
 
 /**
@@ -117,8 +123,9 @@ float DynamicTrainingOptimization::reduceByMax(Tensor const &ratio) {
  * @note      Calcalate l2 norm of the tensor averaged by its size
  */
 float DynamicTrainingOptimization::reduceByNorm(Tensor const &ratio) {
-  float l2norm = ratio.l2norm();
-  return (l2norm * l2norm) / ratio.length();
+  return ratio.mean_abs();
+  // float l2norm = ratio.l2norm();
+  // return (l2norm * l2norm) / ratio.length();
 }
 
 /**< Different types of reduce operations */

@@ -49,6 +49,8 @@ public:
    */
   void setThreshold(float threshold_) { threshold = threshold_; };
 
+  float getThreshold() { return threshold; };
+
   /**
    * @brief     Set the reduce operation for dynamic optimization
    */

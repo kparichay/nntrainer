@@ -91,33 +91,37 @@ void InputLayer::forwarding() {
   if (standardization)
     input_.standardization_i();
 
-  unsigned int batch = input_dim[0].batch();
-  for (unsigned int b = 0; b < batch; b++) {
+  if (augmentation) {
+    unsigned int batch = input_dim[0].batch();
+    for (unsigned int b = 0; b < batch; b++) {
 
-    /** random translation */
-    float translate_x = translate_dist(rng) * input_dim[0].width();
-    float translate_y = translate_dist(rng) * input_dim[0].height();
-    affine_transform_mat.at<cv::Vec2f>(0, 0)[2] = translate_x;
-    affine_transform_mat.at<cv::Vec2f>(1, 0)[2] = translate_y;
+      /** random translation */
+      float translate_x = translate_dist(rng) * input_dim[0].width();
+      float translate_y = translate_dist(rng) * input_dim[0].height();
+      affine_transform_mat.at<cv::Vec2f>(0, 0)[2] = translate_x;
+      affine_transform_mat.at<cv::Vec2f>(1, 0)[2] = translate_y;
 
-    for (unsigned int c = 0; c < input_dim[0].channel(); c++)
-      for (unsigned int h = 0; h < input_dim[0].height(); h++)
-        for (unsigned int w = 0; w < input_dim[0].width(); w++)
-          input_mat.at<cv::Vec3f>(h, w)[c] = input_.getValue(b, c, h, w);
+      for (unsigned int c = 0; c < input_dim[0].channel(); c++)
+        for (unsigned int h = 0; h < input_dim[0].height(); h++)
+          for (unsigned int w = 0; w < input_dim[0].width(); w++)
+            input_mat.at<cv::Vec3f>(h, w)[c] = input_.getValue(b, c, h, w);
 
-    cv::warpAffine(input_mat, output_mat, affine_transform_mat,
-                   output_mat.size(), cv::INTER_LINEAR, cv::BORDER_REFLECT);
+      cv::warpAffine(input_mat, output_mat, affine_transform_mat,
+          output_mat.size(), cv::INTER_LINEAR, cv::BORDER_REFLECT);
 
-    if (flip_dist(rng) < 0.5) {
-      cv::flip(output_mat, input_mat, 1);
-    } else {
-      output_mat.copyTo(input_mat);
+      if (flip_dist(rng) < 0.5) {
+        cv::flip(output_mat, input_mat, 1);
+      } else {
+        output_mat.copyTo(input_mat);
+      }
+
+      for (unsigned int c = 0; c < input_dim[0].channel(); c++)
+        for (unsigned int h = 0; h < input_dim[0].height(); h++)
+          for (unsigned int w = 0; w < input_dim[0].width(); w++)
+            hidden_.setValue(b, c, h, w, input_mat.at<cv::Vec3f>(h, w)[c]);
     }
-
-    for (unsigned int c = 0; c < input_dim[0].channel(); c++)
-      for (unsigned int h = 0; h < input_dim[0].height(); h++)
-        for (unsigned int w = 0; w < input_dim[0].width(); w++)
-          hidden_.setValue(b, c, h, w, input_mat.at<cv::Vec3f>(h, w)[c]);
+  } else {
+    hidden_ = input_;
   }
 }
 

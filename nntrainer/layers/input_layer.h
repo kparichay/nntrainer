@@ -46,7 +46,8 @@ public:
              Args... args) :
     Layer(args...),
     normalization(false),
-    standardization(false) {
+    standardization(false),
+    augmentation(true) {
     trainable = false;
   }
 
@@ -114,9 +115,14 @@ public:
 
   static const std::string type;
 
+  void disableAugmentation() {
+    augmentation = false;
+  }
+
 private:
   bool normalization;
   bool standardization;
+  bool augmentation;
 
   std::mt19937 rng; /**< random number generator */
   std::uniform_real_distribution<float>

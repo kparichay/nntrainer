@@ -40,9 +40,9 @@ This component defines Layers which consist of Neural Network Model. Layers has 
  |  conv2d | Convolution 2D |Convolution 2-Dimentional Layer |
  |  pooling2d | Pooling 2D |Pooling 2-Dimentional Layer. Support average / max / global average / global max pooing |
  | flatten | Flatten | Flatten Layer |
- | fully_connected | Fully Connected | Fully Connected Layer |
+ | fully\_connected | Fully Connected | Fully Connected Layer |
  | input | Input | Input Layer.  This is not always requied. |
- | batch_normalization | Batch Normalization Layer | Batch Normalization Layer. |
+ | batch\_normalization | Batch Normalization Layer | Batch Normalization Layer. |
  | loss layer | loss layer | hidden from users |
  | activation | activaiton layer | set by layer property |
 
@@ -75,9 +75,9 @@ NNTrainer provides
  | sigmoid | sigmoid function | set as layer property |
  | relu | relu function | set as layer propery |
  | softmax | softmax function | set as layer propery |
- | weight_initializer | Weight Initialization | Xavier(Normal/Uniform), LeCun(Normal/Uniform),  HE(Normal/Unifor) |
- | weight_regularizer | weight decay ( L2Norm only ) | needs set weight_regularizer_param & type |
- | learnig_rate_decay | learning rate decay | need to set step |
+ | weight\_initializer | Weight Initialization | Xavier(Normal/Uniform), LeCun(Normal/Uniform),  HE(Normal/Unifor) |
+ | weight\_regularizer | weight decay ( L2Norm only ) | needs set weight\_regularizer\_param & type |
+ | learning\_rate\_decay | learning rate decay | need to set step |
 
 ### Tensor
 
@@ -99,9 +99,9 @@ NNTrainer provides
 
  | Keyward | Loss Name | Description |
  |:-------:|:---:|:---|
- | weight_initializer | Weight Initialization | Xavier(Normal/Uniform), LeCun(Normal/Uniform),  HE(Normal/Unifor) |
- | weight_regularizer | weight decay ( L2Norm only ) | needs set weight_regularizer_constant & type |
- | learnig_rate_decay | learning rate decay | need to set step |
+ | weight\_initializer | Weight Initialization | Xavier(Normal/Uniform), LeCun(Normal/Uniform),  HE(Normal/Unifor) |
+ | weight\_regularizer | weight decay ( L2Norm only ) | needs set weight\_regularizer\_constant & type |
+ | learning\_rate\_decay | learning rate decay | need to set step |
 
 ### APIs
 Currently we privde [C APIs](https://github.com/nnstreamer/nntrainer/blob/master/api/capi/include/nntrainer.h) for Tizen. C++ API also provides soon.
@@ -150,11 +150,20 @@ The following dependencies are needed to compile / build / run.
 *   blas library (CBLAS) (for CPU Acceleration, libopenblas is used for now)
 *   cuda, cudart, cublas (should match the version) (GPU Acceleration on PC)
 *   tensorflow-lite (>= 1.4.0)
-*   libjsoncpp ( >= 0.6.0) (openAI Environment on PC)
-*   libcurl3 (>= 7.47) (openAI Environment on PC)
+*   libjsoncpp ( >= 0.6.0) (for openAI Environment on PC)
+*   libcurl3 (>= 7.47) (for openAI Environment on PC)
 *   libiniparser
-*   libgtest (for testing)
+*   libgtest (optional: for testing)
 
+Install the minimal requirements to build nntrainer with default configuration:
+```bash
+# For tensorflow-lite and nnstreamer dependency
+$ sudo add-apt-repository ppa:nnstreamer/ppa
+$ sudo apt update
+
+# Install the minimal requirements
+$ sudo apt install meson gcc g++ pkg-config libopenblas-dev libiniparser-dev libjsoncpp-dev libcurl3-dev tensorflow-lite-dev nnstreamer-dev
+```
 
 ### Give It a Go Build with Docker
 

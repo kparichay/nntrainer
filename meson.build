@@ -95,7 +95,12 @@ if get_option('enable-blas')
   if build_platform == 'tizen'
     blas_dep = dependency('openblas')
   else
-    blas_dep = dependency('blas-openblas')
+    blas_dep = dependency('blas-openblas', required:false)
+    if not blas_dep.found()
+      # on Ubuntu 20.04, this is needed
+      pkgconfig_dep = dependency('pkg-config')
+      blas_dep = dependency('openblas')
+    endif
   endif
 endif
 
@@ -121,9 +126,6 @@ if not iniparser_dep.found()
   endif
 endif
 
-jsoncpp_dep = dependency('jsoncpp') # jsoncpp
-libcurl_dep = dependency('libcurl')
-
 # Install .pc
 configure_file(input: 'nntrainer.pc.in', output: 'nntrainer.pc',
   install_dir: join_paths(nntrainer_libdir, 'pkgconfig'),
@@ -136,16 +138,18 @@ subdir('nntrainer')
 # Build api
 subdir('api')
 
-if get_option('enable-app')
-  tflite_dep = dependency('tensorflow-lite', required: true)
-  subdir('Applications')
-endif
+# if get_option('enable-app')
+#   jsoncpp_dep = dependency('jsoncpp') # jsoncpp
+#   libcurl_dep = dependency('libcurl')
+#   tflite_dep = dependency('tensorflow-lite', required: true)
+#   subdir('Applications')
+# endif
 
 if get_option('enable-test')
    subdir('test')
 endif
 
-if get_option('enable-nnstreamer-tensor-filter')
-   nnstreamer_dep = dependency('nnstreamer', required: true)
-   subdir('nnstreamer/tensor_filter')
-endif
+# if get_option('enable-nnstreamer-tensor-filter')
+#    nnstreamer_dep = dependency('nnstreamer', required: true)
+#    subdir('nnstreamer/tensor_filter')
+# endif

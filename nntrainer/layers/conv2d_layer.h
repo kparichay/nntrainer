@@ -121,6 +121,27 @@ public:
    */
   void scaleSize(float scalesize) noexcept;
 
+  /**
+   * @brief     reform the data to 2d matrix
+   * a region is sampled considering @a padding, @a mstride of unit @a kdim
+   * Each region is mapped to one column,
+   * if channel mode, kernel channel is considered part of kernel feature
+   * if not, kernel channel is consider part of output dimension
+   *
+   * @param[in] in input data
+   * @param[in] kdim kernel dimesion for define number of row
+   * @param[in] padding padding information
+   * @param[in] mstride stride value : x, y direction
+   * @param[in] channel_mode loop with channel first
+   * @param[out] out out tensor to put, if uninitialized, allocate a new tensor
+   * and set padding
+   * @note if out is initialized tensor, setting padding is skipped.
+   */
+  static void im2col(const Tensor &in, const TensorDim &kdim,
+              const std::array<unsigned int, CONV2D_DIM> &padding,
+              const std::array<unsigned int, CONV2D_DIM> &mstride,
+              bool channel_mode, Tensor &out);
+
 private:
   unsigned int filter_size;
   std::array<unsigned int, CONV2D_DIM> kernel_size;
@@ -147,43 +168,6 @@ private:
    */
   int setFilter(int f);
 
-  /**
-   * @brief     calculation convolution with cblas_*gemm
-   * @param[in] mkernel kernel data
-   * @param[in] kdim kernel data demension
-   * @param[in] in input tensor
-   * @param[in] outdim output tensor dimension
-   * @param[out] out output data
-   * @param[in] channel_mode loop with channel first,
-   * @retval #ML_ERROR_NONE Successful.
-   * @retval #ML_ERROR_INVALID_PARAMETER invalid parameter.
-   */
-  int conv2d_gemm(const float *mkernel, TensorDim kdim, const float *in,
-                  TensorDim outdim, float *out, bool channel_mode,
-                  float beta_dgemm = 0.0f);
-
-  /**
-   * @brief     reform the data to 2d matrix
-   * a region is sampled considering @a padding, @a mstride of unit @a kdim
-   * Each region is mapped to one column,
-   * if channel mode, kernel channel is considered part of kernel feature
-   * if not, kernel channel is consider part of output dimension
-   *
-   * @param[in] in input data
-   * @param[in] kdim kernel dimesion for define number of row
-   * @param[in] padding padding information
-   * @param[in] mstride stride value : x, y direction
-   * @param[in] channel_mode loop with channel first
-   * @return Tensor im2col tensor
-   */
-  Tensor im2col(const Tensor &in, const TensorDim &kdim,
-                const std::array<unsigned int, CONV2D_DIM> &padding,
-                const std::array<unsigned int, CONV2D_DIM> &mstride,
-                bool channel_mode);
-
-  int im2col_(Tensor in_padded, TensorDim kdim, float *in_col, TensorDim outdim,
-              const std::array<unsigned int, CONV2D_DIM> &mstride,
-              bool channel_mode);
 };
 
 } // namespace nntrainer

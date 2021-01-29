@@ -20,7 +20,7 @@
 
 #include <layer_internal.h>
 #include <tensor.h>
-#include <util_func.h>
+// #include <util_func.h>
 
 namespace nntrainer {
 
@@ -40,7 +40,7 @@ public:
     skip_n_iterations(skip_n_iter) {
     reduce_op = reduceByNorm;
     calc_ratio_op = ratioUsingDerivative;
-    rng.seed(getSeed());
+    rng.seed(100);
     dist = std::uniform_real_distribution<float>(0.0, 1.0);
   }
 

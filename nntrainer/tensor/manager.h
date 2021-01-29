@@ -91,9 +91,9 @@ public:
           bool enable_activation_memory_opt_ = true,
           bool use_shared_memory_ = true);
 
-  Manager(const Manager &) = default;
+  Manager(const Manager &) = delete;
 
-  Manager &operator=(const Manager &) = default;
+  Manager &operator=(const Manager &) = delete;
 
   Manager(Manager &&) noexcept = default;
 

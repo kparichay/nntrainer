@@ -48,7 +48,7 @@
 #include <optimizer_internal.h>
 #include <pooling2d_layer.h>
 #include <tensor.h>
-#include <util_func.h>
+// #include <util_func.h>
 
 #include <model.h>
 #include <nntrainer-api-common.h>
@@ -407,7 +407,7 @@ public:
    * "max" and "norm" for now
    */
   void enableDynamicTraining(
-    float threshold, std::string op = DynamicTrainingOptimization::dft_opt_max,
+    float threshold, std::string op = DynamicTrainingOptimization::dft_opt_norm,
     std::string mode = DynamicTrainingOptimization::dft_opt_mode_derivative) {
     dynamic_training_opt.setThreshold(threshold);
     dynamic_training_opt.setOp(op);

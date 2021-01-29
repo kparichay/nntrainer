@@ -5,7 +5,8 @@ util_sources = [
 ]
 
 util_headers = [
-  'profiler.h'
+  'profiler.h',
+  'util_func.h'
 ]
 
 foreach s : util_sources

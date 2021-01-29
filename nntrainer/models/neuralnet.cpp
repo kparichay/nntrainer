@@ -345,6 +345,11 @@ void NeuralNetwork::backwarding(std::shared_ptr<Layer> layer, int iteration,
    */
   static double skip_grad_count = 0, total_count = 0;
 
+  if (iteration == 0) {
+    skip_grad_count = 0;
+    total_count = 0;
+  }
+
   bool apply_gradient;
   /** If gradient optimization mode, then calculate gradient first */
   if (dynamic_training_opt.isGradientMode())
@@ -368,7 +373,7 @@ void NeuralNetwork::backwarding(std::shared_ptr<Layer> layer, int iteration,
   if (apply_gradient)
     opt->apply_gradients(layer->getWeightsRef(), iteration);
 
-  if (!layer->getWeightsRef().empty()) {
+  if (!layer->getWeightsRef().empty() && layer->getWeightsRef()[0].getName() == "Conv2d:filter") {
     total_count += 1;
     if (apply_gradient) {
       std::cout << "Grad applied for " << layer->getName() << ", skipped ratio -> " << skip_grad_count/total_count << std::endl;
@@ -594,56 +599,56 @@ int NeuralNetwork::train_run() {
   auto &label = last_layer->net_hidden[0]->getGradientRef();
   auto &in = first_layer->net_input[0]->getVariableRef();
 
-  for (epoch_idx = epoch_idx + 1; epoch_idx <= epochs; ++epoch_idx) {
-    training.loss = 0.0f;
-    status = data_buffer->run(nntrainer::BufferType::BUF_TRAIN);
-    if (status != ML_ERROR_NONE) {
-      data_buffer->clear(BufferType::BUF_TRAIN);
-      return status;
-    }
+  // for (epoch_idx = epoch_idx + 1; epoch_idx <= epochs; ++epoch_idx) {
+  //   training.loss = 0.0f;
+  //   status = data_buffer->run(nntrainer::BufferType::BUF_TRAIN);
+  //   if (status != ML_ERROR_NONE) {
+  //     data_buffer->clear(BufferType::BUF_TRAIN);
+  //     return status;
+  //   }
 
-    if (data_buffer->getValidation()[(int)nntrainer::BufferType::BUF_TEST]) {
-      status = data_buffer->run(nntrainer::BufferType::BUF_TEST);
-      if (status != ML_ERROR_NONE) {
-        data_buffer->clear(BufferType::BUF_TEST);
-        return status;
-      }
-    }
+  //   if (data_buffer->getValidation()[(int)nntrainer::BufferType::BUF_TEST]) {
+  //     status = data_buffer->run(nntrainer::BufferType::BUF_TEST);
+  //     if (status != ML_ERROR_NONE) {
+  //       data_buffer->clear(BufferType::BUF_TEST);
+  //       return status;
+  //     }
+  //   }
 
-    int count = 0;
+  //   int count = 0;
 
-    while (true) {
-      if (data_buffer->getDataFromBuffer(nntrainer::BufferType::BUF_TRAIN,
-                                         in.getData(), label.getData())) {
-        try {
-          forwarding();
-          backwarding(iter++);
-        } catch (...) {
-          data_buffer->clear(nntrainer::BufferType::BUF_TRAIN);
-          ml_loge("Error: training error in #%d/%d.", epoch_idx, epochs);
-          std::rethrow_exception(std::current_exception());
-        }
-        std::cout << "#" << epoch_idx << "/" << epochs;
-        data_buffer->displayProgress(count++, nntrainer::BufferType::BUF_TRAIN,
-                                     getLoss());
-        std::cout << std::endl;
-        training.loss += getLoss();
-      } else {
-        data_buffer->clear(nntrainer::BufferType::BUF_TRAIN);
-        break;
-      }
-    }
+  //   while (true) {
+  //     if (data_buffer->getDataFromBuffer(nntrainer::BufferType::BUF_TRAIN,
+  //                                        in.getData(), label.getData())) {
+  //       try {
+  //         forwarding();
+  //         backwarding(iter++);
+  //       } catch (...) {
+  //         data_buffer->clear(nntrainer::BufferType::BUF_TRAIN);
+  //         ml_loge("Error: training error in #%d/%d.", epoch_idx, epochs);
+  //         std::rethrow_exception(std::current_exception());
+  //       }
+  //       std::cout << "#" << epoch_idx << "/" << epochs;
+  //       data_buffer->displayProgress(count++, nntrainer::BufferType::BUF_TRAIN,
+  //                                    getLoss());
+  //       std::cout << std::endl;
+  //       training.loss += getLoss();
+  //     } else {
+  //       data_buffer->clear(nntrainer::BufferType::BUF_TRAIN);
+  //       break;
+  //     }
+  //   }
 
-    if (count == 0)
-      throw std::runtime_error("No training data");
+  //   if (count == 0)
+  //     throw std::runtime_error("No training data");
 
-    training.loss /= count;
-    saveModel();
+  //   training.loss /= count;
+  //   saveModel();
 
-    std::cout << "#" << epoch_idx << "/" << epochs
-              << " - Training Loss: " << training.loss;
-    std::cout << std::endl;
-  }
+  //   std::cout << "#" << epoch_idx << "/" << epochs
+  //             << " - Training Loss: " << training.loss;
+  //   std::cout << std::endl;
+  // }
 
   for (auto const &ln : model_graph.Sorted) {
     ln.layer->setTrainable(false);

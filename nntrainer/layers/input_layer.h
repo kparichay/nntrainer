@@ -24,10 +24,11 @@
 #define __INPUT_LAYER_H__
 #ifdef __cplusplus
 
+#include <random>
 #include <layer_internal.h>
 #include <tensor.h>
 
-#include <opencv2/highgui/highgui.hpp>
+// #include <opencv2/highgui/highgui.hpp>
 // #include <opencv2/imgproc.hpp>
 
 namespace nntrainer {
@@ -129,8 +130,8 @@ private:
     flip_dist; /**< uniform random distribution */
   std::uniform_real_distribution<float>
     translate_dist; /**< uniform random distribution */
-  cv::Mat affine_transform_mat;
-  cv::Mat input_mat, output_mat;
+  // cv::Mat affine_transform_mat;
+  // cv::Mat input_mat, output_mat;
 
   /**
    * @brief     set normalization

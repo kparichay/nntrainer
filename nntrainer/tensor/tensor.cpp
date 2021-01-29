@@ -583,7 +583,7 @@ Tensor Tensor::dot(Tensor const &m, bool trans, bool trans_m) const {
  * in case of trans is false.
  */
 Tensor &Tensor::dot(Tensor const &m, Tensor &result, bool trans,
-                    bool trans_m) const {
+                    bool trans_m, float beta) const {
   if (m.dim.rank() > 2) {
     throw exception::not_supported("Error: support only for rank of dot "
                                    "matrix <= 2");
@@ -647,7 +647,6 @@ Tensor &Tensor::dot(Tensor const &m, Tensor &result, bool trans,
   const float *mdata = m.getData();
   float *rdata = result.getData();
   const float alpha = 1.0f;
-  const float beta = 0.0f;
   enum CBLAS_TRANSPOSE transA = trans ? CblasTrans : CblasNoTrans;
   enum CBLAS_TRANSPOSE transB = trans_m ? CblasTrans : CblasNoTrans;
 
@@ -659,7 +658,7 @@ Tensor &Tensor::dot(Tensor const &m, Tensor &result, bool trans,
   /// (1 * K) X (1 * M) can be a case
   /// case1: (1 * K) X (K * 1)
   if (M == 1 && N == 1) {
-    *rdata = sdot(K, data, 1, mdata, 1);
+    *rdata = sdot(K, data, 1, mdata, 1) + beta * (*rdata);
   }
   /// case2: (M * K) X (K * 1)
   else if (N == 1) {
@@ -937,7 +936,7 @@ float Tensor::max_abs() const {
   const float *data = getData();
 
   unsigned int idx = isamax(len, data, 1);
-  return *(data + idx);
+  return std::abs(*(data + idx));
 }
 
 float Tensor::mean_abs() const {

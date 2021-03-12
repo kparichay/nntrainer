@@ -508,6 +508,11 @@ private:
   Profiler profiler;
 #endif
 
+  /**
+   * @brief     Update batch size of the model as well as its layers/dataset
+   */
+  void setBatchSize(unsigned int batch_size);
+
 private:
   /**
    * @brief   Print Options when printing layer info
@@ -648,11 +653,6 @@ private:
    * @retval #ML_ERROR_INVALID_PARAMETER invalid parameter.
    */
   int setTrainConfig(std::vector<std::string> values);
-
-  /**
-   * @brief     Update batch size of the model as well as its layers/dataset
-   */
-  void setBatchSize(unsigned int batch_size);
 
   /**
    * @brief print metrics function for neuralnet

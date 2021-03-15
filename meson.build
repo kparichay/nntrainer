@@ -7,7 +7,7 @@ project('nntrainer', 'c', 'cpp',
     'warning_level=1',
     'c_std=gnu89',
     'cpp_std=c++14',
-    'buildtype=release'
+    'buildtype=debug'
   ]
 )
 add_project_arguments('-DMIN_CPP_VERSION=201402', language:['c','cpp'])

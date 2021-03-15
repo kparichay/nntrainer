@@ -278,13 +278,13 @@ int testModel(const char *data_path, const char *model) {
 #if defined(NNSTREAMER_AVAILABLE)
   int status = ML_ERROR_NONE;
   ml_pipeline_h pipe;
-  ml_pipeline_src_h src;
-  ml_pipeline_sink_h sink;
-  ml_tensors_info_h in_info;
-  ml_tensors_data_h in_data;
-  void *raw_data;
-  size_t data_size;
-  ml_tensor_dimension in_dim = {1, IMAGE_SIDE, IMAGE_SIDE, IMAGE_CHANNELS};
+  // ml_pipeline_src_h src;
+  // ml_pipeline_sink_h sink;
+  // ml_tensors_info_h in_info;
+  /// ml_tensors_data_h in_data;
+  // void *raw_data;
+  // size_t data_size;
+  //ml_tensor_dimension in_dim = {1, IMAGE_SIDE, IMAGE_SIDE, IMAGE_CHANNELS};
 
   char pipeline[2048];
   snprintf(
@@ -303,76 +303,76 @@ int testModel(const char *data_path, const char *model) {
   if (status != ML_ERROR_NONE)
     goto fail_exit;
 
-  status = ml_pipeline_src_get_handle(pipe, "srcx", &src);
-  if (status != ML_ERROR_NONE)
-    goto fail_pipe_destroy;
+  // status = ml_pipeline_src_get_handle(pipe, "srcx", &src);
+  // if (status != ML_ERROR_NONE)
+  //   goto fail_pipe_destroy;
 
-  status = ml_pipeline_sink_register(pipe, "sinkx", sink_cb, NULL, &sink);
-  if (status != ML_ERROR_NONE)
-    goto fail_src_release;
+  // status = ml_pipeline_sink_register(pipe, "sinkx", sink_cb, NULL, &sink);
+  // if (status != ML_ERROR_NONE)
+  //   goto fail_src_release;
 
-  status = ml_pipeline_start(pipe);
-  if (status != ML_ERROR_NONE)
-    goto fail_sink_release;
+  // status = ml_pipeline_start(pipe);
+  // if (status != ML_ERROR_NONE)
+  //   goto fail_sink_release;
 
-  ml_tensors_info_create(&in_info);
-  ml_tensors_info_set_count(in_info, 1);
-  ml_tensors_info_set_tensor_type(in_info, 0, ML_TENSOR_TYPE_FLOAT32);
-  ml_tensors_info_set_tensor_dimension(in_info, 0, in_dim);
+  // ml_tensors_info_create(&in_info);
+  // ml_tensors_info_set_count(in_info, 1);
+  // ml_tensors_info_set_tensor_type(in_info, 0, ML_TENSOR_TYPE_FLOAT32);
+  // ml_tensors_info_set_tensor_dimension(in_info, 0, in_dim);
 
-  for (int i = 0; i < TOTAL_TEST_SIZE; i++) {
-    char *test_file_path;
-    status =
-      asprintf(&test_file_path, "%s/testset/test%d.bmp", data_path, i + 1);
-    if (status < 0) {
-      status = -errno;
-      goto fail_info_release;
-    }
+  // for (int i = 0; i < TOTAL_TEST_SIZE; i++) {
+  //   char *test_file_path;
+  //   status =
+  //     asprintf(&test_file_path, "%s/testset/test%d.bmp", data_path, i + 1);
+  //   if (status < 0) {
+  //     status = -errno;
+  //     goto fail_info_release;
+  //   }
 
-    float featureVector[INPUT_SIZE];
-    status = getInputFeature_c(test_file_path, featureVector);
-    free(test_file_path);
-    if (status != ML_ERROR_NONE)
-      goto fail_info_release;
+  //   float featureVector[INPUT_SIZE];
+  //   status = getInputFeature_c(test_file_path, featureVector);
+  //   free(test_file_path);
+  //   if (status != ML_ERROR_NONE)
+  //     goto fail_info_release;
 
-    status = ml_tensors_data_create(in_info, &in_data);
-    if (status != ML_ERROR_NONE)
-      goto fail_info_release;
+  //   status = ml_tensors_data_create(in_info, &in_data);
+  //   if (status != ML_ERROR_NONE)
+  //     goto fail_info_release;
 
-    status = ml_tensors_data_get_tensor_data(in_data, 0, &raw_data, &data_size);
-    if (status != ML_ERROR_NONE) {
-      ml_tensors_data_destroy(&in_data);
-      goto fail_info_release;
-    }
+  //   status = ml_tensors_data_get_tensor_data(in_data, 0, &raw_data, &data_size);
+  //   if (status != ML_ERROR_NONE) {
+  //     ml_tensors_data_destroy(&in_data);
+  //     goto fail_info_release;
+  //   }
 
-    for (size_t ds = 0; ds < data_size / sizeof(float); ds++)
-      ((float *)raw_data)[ds] = featureVector[ds];
+  //   for (size_t ds = 0; ds < data_size / sizeof(float); ds++)
+  //     ((float *)raw_data)[ds] = featureVector[ds];
 
-    status = ml_pipeline_src_input_data(src, in_data,
-                                        ML_PIPELINE_BUF_POLICY_AUTO_FREE);
-    if (status != ML_ERROR_NONE) {
-      ml_tensors_data_destroy(&in_data);
-      goto fail_info_release;
-    }
+  //   status = ml_pipeline_src_input_data(src, in_data,
+  //                                       ML_PIPELINE_BUF_POLICY_AUTO_FREE);
+  //   if (status != ML_ERROR_NONE) {
+  //     ml_tensors_data_destroy(&in_data);
+  //     goto fail_info_release;
+  //   }
 
-    /** No need to destroy data here, pipeline freed buffer automatically */
-  }
+  //   /** No need to destroy data here, pipeline freed buffer automatically */
+  // }
 
   /** Sleep for 1 second for all the data to be received by sink callback */
   sleep(1);
 
-fail_info_release:
-  ml_tensors_info_destroy(in_info);
+// fail_info_release:
+  // ml_tensors_info_destroy(in_info);
 
-  status = ml_pipeline_stop(pipe);
+  // status = ml_pipeline_stop(pipe);
 
-fail_sink_release:
-  status = ml_pipeline_sink_unregister(sink);
+// fail_sink_release:
+//   status = ml_pipeline_sink_unregister(sink);
+//
+// fail_src_release:
+//   status = ml_pipeline_src_release_handle(src);
 
-fail_src_release:
-  status = ml_pipeline_src_release_handle(src);
-
-fail_pipe_destroy:
+// fail_pipe_destroy:
   status = ml_pipeline_destroy(pipe);
 
 fail_exit:
@@ -422,27 +422,27 @@ int main(int argc, char *argv[]) {
   /** location of resources ( ../../res/ ) */
   std::string data_path = args[1];
 
-  /// @todo add capi version of this
-  try {
-    nntrainer::AppContext::Global().setWorkingDirectory(data_path);
-  } catch (std::invalid_argument &e) {
-    std::cerr << "setting data_path failed, pwd is used instead";
-  }
+  // /// @todo add capi version of this
+  // try {
+  //   nntrainer::AppContext::Global().setWorkingDirectory(data_path);
+  // } catch (std::invalid_argument &e) {
+  //   std::cerr << "setting data_path failed, pwd is used instead";
+  // }
 
   srand(time(NULL));
 
   /** Load input images */
-  try {
-    loadAllData(data_path, inputVector, labelVector);
-  } catch (...) {
-    std::cout << "Failed loading input images." << std::endl;
-    return 1;
-  }
+  // try {
+  //   loadAllData(data_path, inputVector, labelVector);
+  // } catch (...) {
+  //   std::cout << "Failed loading input images." << std::endl;
+  //   return 1;
+  // }
 
   /** Do the training */
-  status = trainModel(config.c_str());
-  if (status != ML_ERROR_NONE)
-    return 1;
+  // status = trainModel(config.c_str());
+  // if (status != ML_ERROR_NONE)
+  //   return 1;
 
   /** Test the trained model */
   status = testModel(data_path.c_str(), config.c_str());
@@ -454,18 +454,18 @@ int main(int argc, char *argv[]) {
 #endif
 
 #if defined(APP_VALIDATE)
-  try {
-    testing::InitGoogleTest(&argc, argv);
-  } catch (...) {
-    std::cerr << "Error duing InitGoogleTest" << std::endl;
-    return 0;
-  }
+  // try {
+  //   testing::InitGoogleTest(&argc, argv);
+  // } catch (...) {
+  //   std::cerr << "Error duing InitGoogleTest" << std::endl;
+  //   return 0;
+  // }
 
-  try {
-    status = RUN_ALL_TESTS();
-  } catch (...) {
-    std::cerr << "Error duing RUN_ALL_TSETS()" << std::endl;
-  }
+  // try {
+  //   status = RUN_ALL_TESTS();
+  // } catch (...) {
+  //   std::cerr << "Error duing RUN_ALL_TSETS()" << std::endl;
+  // }
 #endif
 
   return status;

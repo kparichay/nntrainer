@@ -23,19 +23,9 @@
 #include <vector>
 
 #include <layer_internal.h>
+#include <layer_node.h>
 
 namespace nntrainer {
-
-/**
- * @brief     Graph Node Type
- */
-struct LayerNode {
-  std::shared_ptr<Layer> layer;
-  unsigned int index;
-#ifdef PROFILE
-  int event_key;
-#endif
-};
 
 /**
  * @class   NeuralNetwork Graph Class
@@ -151,7 +141,7 @@ public:
    * @retval Layer
    */
   std::shared_ptr<Layer> getLayer(const std::string &layer_name) {
-    return getLayerNode(layer_name).layer;
+    return getLayerNode(layer_name).getObject();
   }
 
   /**
@@ -238,7 +228,7 @@ public:
     if (this != &from) {
       // FIXME: this assumes elements already in layers/adj, solve that
       for (unsigned int i = 0; i < adj.size(); i++)
-        adj[i].front().layer->copy(from.adj[i].front().layer);
+        adj[i].front().getObject()->copy(from.adj[i].front().getObject());
     }
     return *this;
   }
@@ -284,7 +274,7 @@ private:
    * @param[in] ith Node index : From
    * @param[in] node LayerNode object to be added : To
    */
-  void addEdge(unsigned int ith, LayerNode node);
+  void addEdge(unsigned int ith, LayerNode &node);
 
   /**
    * @brief     make connection between nodes

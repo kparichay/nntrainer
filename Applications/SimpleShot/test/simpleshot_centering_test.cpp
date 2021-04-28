@@ -18,6 +18,7 @@
 #include <app_context.h>
 #include <manager.h>
 #include <nntrainer_test_util.h>
+#include <layer_node.h>
 
 #include <layers/centering.h>
 
@@ -34,13 +35,12 @@ TEST(centering, simple_functions) {
   file.close();
 
   auto &app_context = nntrainer::AppContext::Global();
-  app_context.registerFactory(ml::train::createLayer<CenteringLayer>);
+  app_context.registerFactory(nntrainer::createLayer<CenteringLayer>);
 
-  auto c = app_context.createObject<ml::train::Layer>(
+  auto c = app_context.createObject<nntrainer::Layer>(
     "centering", {"feature_path=feature.bin", "input_shape=1:1:4"});
 
-  std::unique_ptr<CenteringLayer> layer(
-    static_cast<CenteringLayer *>(c.release()));
+  std::shared_ptr<CenteringLayer> layer(static_cast<CenteringLayer *>(c.release()));
 
   nntrainer::Manager manager;
 

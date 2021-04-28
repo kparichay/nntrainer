@@ -53,7 +53,8 @@ public:
    * @brief Create new LayerNode and add into Graph
    * @param[in] layer shared_ptr of Layer
    */
-  void addLayer(std::shared_ptr<Layer> layer);
+  // void addLayer(std::shared_ptr<Layer> layer);
+  void addLayer(std::shared_ptr<LayerNode> layer);
 
   /**
    * @brief get current flat graph from the model before sorting
@@ -119,21 +120,21 @@ public:
    * @param[in] index
    * @ret LayerNode
    */
-  LayerNode &getLayerNode(unsigned int ith);
+  std::shared_ptr<LayerNode> &getLayerNode(unsigned int ith);
 
   /**
    * @brief getter of Sorted LayerNode with index number
    * @param[in] index
    * @ret LayerNode
    */
-  LayerNode &getSortedLayerNode(unsigned int ith);
+  std::shared_ptr<LayerNode> &getSortedLayerNode(unsigned int ith);
 
   /**
    * @brief getter of LayerNode with layer name
    * @param[in] layer name
    * @retval LayerNode
    */
-  LayerNode &getLayerNode(const std::string &layer_name);
+  std::shared_ptr<LayerNode> &getLayerNode(const std::string &layer_name);
 
   /**
    * @brief getter of Layer with layer name
@@ -141,7 +142,7 @@ public:
    * @retval Layer
    */
   std::shared_ptr<Layer> getLayer(const std::string &layer_name) {
-    return getLayerNode(layer_name).getObject();
+    return getLayerNode(layer_name)->getObject();
   }
 
   /**
@@ -183,14 +184,14 @@ public:
    * @brief     getter of ordered graph
    * @retval    ordered LayerNode list
    */
-  const std::vector<LayerNode> &getSorted() const;
-  std::vector<LayerNode> &getSorted();
+  const std::vector<std::shared_ptr<LayerNode>> &getSorted() const;
+  std::vector<std::shared_ptr<LayerNode>> &getSorted();
 
   /**
    * @brief     get begin iterator for the backwarding
    * @retval    const reverse iterator marking the begin of backwarding
    */
-  std::vector<LayerNode>::const_reverse_iterator getBackwardingBeginIter() {
+  std::vector<std::shared_ptr<LayerNode>>::const_reverse_iterator getBackwardingBeginIter() {
     return Sorted.crbegin();
   }
 
@@ -198,7 +199,7 @@ public:
    * @brief     get end iterator for the backwarding
    * @retval    const reverse iterator marking the end of backwarding
    */
-  std::vector<LayerNode>::const_reverse_iterator getBackwardingEndIter() {
+  std::vector<std::shared_ptr<LayerNode>>::const_reverse_iterator getBackwardingEndIter() {
     return Sorted.crend() - skip_non_trainable_layers;
   }
 
@@ -228,7 +229,7 @@ public:
     if (this != &from) {
       // FIXME: this assumes elements already in layers/adj, solve that
       for (unsigned int i = 0; i < adj.size(); i++)
-        adj[i].front().getObject()->copy(from.adj[i].front().getObject());
+        adj[i].front()->getObject()->copy(from.adj[i].front()->getObject());
     }
     return *this;
   }
@@ -236,8 +237,8 @@ public:
 private:
   std::map<std::string, std::string> sub_in_out; /** This is map to identify
                    input and output layer name of subgraph */
-  std::vector<std::list<LayerNode>> adj;         /**< Graph Structure */
-  std::vector<LayerNode> Sorted; /**< Ordered Graph Node List  */
+  std::vector<std::list<std::shared_ptr<LayerNode>>> adj;         /**< Graph Structure */
+  std::vector<std::shared_ptr<LayerNode>> Sorted; /**< Ordered Graph Node List  */
   std::set<std::string>
     layer_names; /**< Set containing all the names of layers in the model */
   int def_name_count; /**< Count assigned to layer names declared by default */
@@ -253,7 +254,7 @@ private:
    * @param[in] stack for Node list to visit.
    */
   void topologicalSortUtil(unsigned int ith, std::vector<bool> &visited,
-                           std::stack<LayerNode> &Stack);
+                           std::stack<std::shared_ptr<LayerNode>> &Stack);
 
   /**
    * @brief     check if graph is ready to compile.
@@ -274,7 +275,7 @@ private:
    * @param[in] ith Node index : From
    * @param[in] node LayerNode object to be added : To
    */
-  void addEdge(unsigned int ith, LayerNode &node);
+  void addEdge(unsigned int ith, std::shared_ptr<LayerNode> &node);
 
   /**
    * @brief     make connection between nodes
@@ -363,6 +364,7 @@ private:
    * @param[in] layer shared_ptr of Layer
    */
   void addLayerNode(std::shared_ptr<Layer> layer);
+  void addLayerNode(std::shared_ptr<LayerNode> layer);
 
   /**
    * @brief Sorting and Define order to calculate : Depth First Search

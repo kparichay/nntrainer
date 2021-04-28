@@ -20,6 +20,7 @@
 #include <app_context.h>
 #include <layer.h>
 #include <layer_internal.h>
+#include <layer_node.h>
 
 const char *NNTRAINER_PATH = std::getenv("NNTRAINER_PATH");
 
@@ -68,8 +69,11 @@ TEST(AppContext, DefaultEnvironmentPath_p) {
   auto l = ml::train::createLayer("pow");
   EXPECT_EQ(l->getType(), "pow");
 
+  std::shared_ptr<nntrainer::LayerNode> lnode =
+    std::static_pointer_cast<nntrainer::LayerNode>(l);
+
   std::unique_ptr<nntrainer::Layer> layer(
-    static_cast<nntrainer::Layer *>(l.release()));
+    static_cast<nntrainer::Layer>(*l->getObject().get()));
 
   std::ifstream input_file("does_not_exist");
   EXPECT_NO_THROW(layer->read(input_file));

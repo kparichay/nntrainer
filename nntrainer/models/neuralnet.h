@@ -77,7 +77,7 @@ class NeuralNetwork : public ml::train::Model {
   friend class ModelLoader; /** access private members of ModelLoader */
 
 public:
-  using NodeType = std::shared_ptr<Layer>; /** Type of a Node */
+  using NodeType = std::shared_ptr<LayerNode>; /** Type of a Node */
   using GraphType = std::vector<NodeType>; /** actual graph type */
   using FlatGraphType =
     std::vector<NodeType>; /** topological sorted, iterable 1-D list of nodes */
@@ -300,7 +300,7 @@ public:
    * @retval #ML_ERROR_INVALID_PARAMETER invalid parameter.
    */
   int addLayer(std::shared_ptr<ml::train::Layer> layer) {
-    return addLayer(std::static_pointer_cast<Layer>(layer));
+    return addLayer(std::static_pointer_cast<LayerNode>(layer));
   }
 
   /**
@@ -318,7 +318,7 @@ public:
    * @retval #ML_ERROR_NONE Successful.
    * @retval #ML_ERROR_INVALID_PARAMETER invalid parameter.
    */
-  int extendGraph(GraphType graph, std::string prefix = "");
+  // int extendGraph(GraphType graph, std::string prefix = "");
 
   /**
    * @brief     set optimizer for the neural network model
@@ -370,7 +370,7 @@ public:
    * @note these layers will be in sorted order if the model is compiled,
    * otherwise the order is the order of addition of layers in the model.
    */
-  FlatGraphType getFlatGraph() { return model_graph.getLayers(); }
+  // FlatGraphType getFlatGraph() { return model_graph.getLayers(); }
 
   NetworkGraphType getNetworkGraph() { return model_graph; }
 
@@ -380,8 +380,8 @@ public:
    * copied.
    * @retval current graph
    */
-  GraphType getUnsortedLayers(const std::string &input_layer = "",
-                              const std::string &output_layer = "");
+  // GraphType getUnsortedLayers(const std::string &input_layer = "",
+  //                             const std::string &output_layer = "");
 
   /**
    * @brief     Set loss type for the neural network.

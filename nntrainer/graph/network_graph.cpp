@@ -68,7 +68,9 @@ int NetworkGraph::compile(const LossType loss_type) {
      * As this resize is guaranteed to not insert new elements,  create a
      * default element needed by resize.
      */
-    adj[i].resize(1, LayerNode(nullptr, 0));
+    // FIXME: THIS HAS SOME ISSUE
+    // adj[i].resize(1, std::shared_ptr<LayerNode>(nullptr, 0));
+    adj[i].resize(1);
 
   compiled = true;
 
@@ -78,7 +80,7 @@ int NetworkGraph::compile(const LossType loss_type) {
 void NetworkGraph::updateConnectionName(const std::string &from,
                                         const std::string &to) {
   for (unsigned int i = 0; i < adj.size(); ++i) {
-    auto &layer = adj[i].front().getObject();
+    auto &layer = adj[i].front()->getObject();
     if (istrequal(layer->getName(), to))
       continue;
     for (unsigned int j = 0; j < layer->input_layers.size(); ++j) {
@@ -91,8 +93,8 @@ void NetworkGraph::updateConnectionName(const std::string &from,
 
 void NetworkGraph::addDefaultInputLayers() {
   for (unsigned int i = 1; i < adj.size(); ++i) {
-    auto &layer = adj[i].front().getObject();
-    auto &prev_layer = adj[i - 1].front().getObject();
+    auto &layer = adj[i].front()->getObject();
+    auto &prev_layer = adj[i - 1].front()->getObject();
     if (layer->input_layers.size() == 0) {
       layer->input_layers.push_back(prev_layer->getName());
     }
@@ -100,25 +102,28 @@ void NetworkGraph::addDefaultInputLayers() {
 }
 
 void NetworkGraph::addLayerNode(std::shared_ptr<Layer> layer) {
-  std::list<LayerNode> l;
-  std::unique_ptr<LayerNode> node =
-    std::make_unique<LayerNode>(layer, adj.size());
+  addLayerNode(std::make_unique<LayerNode>(layer, adj.size()));
+}
 
-  l.assign(1, *node);
+void NetworkGraph::addLayerNode(std::shared_ptr<LayerNode> layer) {
+  std::list<std::shared_ptr<LayerNode>> l;
+  layer->setIndex(adj.size());
+
+  l.assign(1, layer);
   adj.push_back(l);
 }
 
-LayerNode &NetworkGraph::getLayerNode(unsigned int ith) {
+std::shared_ptr<LayerNode> &NetworkGraph::getLayerNode(unsigned int ith) {
   if (ith >= size())
     throw std::invalid_argument("Exceed total number of layer");
 
-  if (adj[ith].front().getIndex() != ith)
+  if (adj[ith].front()->getIndex() != ith)
     throw std::runtime_error("Graph internal index mismatch");
 
   return adj[ith].front();
 }
 
-LayerNode &NetworkGraph::getSortedLayerNode(unsigned int ith) {
+std::shared_ptr<LayerNode> &NetworkGraph::getSortedLayerNode(unsigned int ith) {
   if (ith >= getSorted().size())
     throw std::invalid_argument("Exceed total number of layer");
 
@@ -127,12 +132,12 @@ LayerNode &NetworkGraph::getSortedLayerNode(unsigned int ith) {
 
 void NetworkGraph::topologicalSortUtil(unsigned int ith,
                                        std::vector<bool> &visited,
-                                       std::stack<LayerNode> &Stack) {
+                                       std::stack<std::shared_ptr<LayerNode>> &Stack) {
   visited[ith] = true;
 
-  std::list<LayerNode>::iterator i;
+  std::list<std::shared_ptr<LayerNode>>::iterator i;
   for (i = adj[ith].begin(); i != adj[ith].end(); ++i) {
-    auto index = (*i).getIndex();
+    auto index = (*i)->getIndex();
     if (!visited[index])
       topologicalSortUtil(index, visited, Stack);
   }
@@ -142,7 +147,7 @@ void NetworkGraph::topologicalSortUtil(unsigned int ith,
 
 void NetworkGraph::countNonTrainableLayersAtBegin() {
   for (auto iter = Sorted.cbegin(); iter != Sorted.cend(); iter++) {
-    if ((*iter).getObject()->getTrainable()) {
+    if ((*iter)->getObject()->getTrainable()) {
       skip_non_trainable_layers = iter - Sorted.cbegin();
       break;
     }
@@ -150,7 +155,7 @@ void NetworkGraph::countNonTrainableLayersAtBegin() {
 }
 
 void NetworkGraph::topologicalSort() {
-  std::stack<LayerNode> Stack;
+  std::stack<std::shared_ptr<LayerNode>> Stack;
   std::vector<bool> visited(adj.size());
   Sorted.clear();
 
@@ -348,7 +353,7 @@ int NetworkGraph::addLossLayer(const LossType loss_type) {
 
   int status = ML_ERROR_NONE;
 
-  if (Sorted.back().getObject()->getType() == LossLayer::type)
+  if (Sorted.back()->getObject()->getType() == LossLayer::type)
     return status;
 
   if (loss_type == LossType::LOSS_NONE) {
@@ -361,19 +366,19 @@ int NetworkGraph::addLossLayer(const LossType loss_type) {
     NN_RETURN_STATUS();
   }
 
-  LayerNode last_node = Sorted.back();
+  auto &last_node = Sorted.back();
   if (updated_loss_type == LossType::LOSS_ENTROPY) {
-    if (last_node.getObject()->getType() != "activation") {
+    if (last_node->getObject()->getType() != "activation") {
       ml_loge("Error: Cross Entropy need last layer to have softmax or sigmoid "
               "activation.");
       return ML_ERROR_NOT_SUPPORTED;
     }
 
-    LayerNode last_node = Sorted.back();
+    auto &last_node = Sorted.back();
     adj.pop_back();
     Sorted.pop_back();
 
-    switch (last_node.getObject()->getActivationType()) {
+    switch (last_node->getObject()->getActivationType()) {
     case ActivationType::ACT_SIGMOID:
       updated_loss_type = LossType::LOSS_ENTROPY_SIGMOID;
       break;
@@ -387,14 +392,14 @@ int NetworkGraph::addLossLayer(const LossType loss_type) {
   }
 
   last_node = Sorted.back();
-  std::string input_str = last_node.getObject()->getName();
+  std::string input_str = last_node->getObject()->getName();
 
   std::shared_ptr<LossLayer> layer = std::make_unique<LossLayer>();
   ensureName(layer);
 
-  last_node.getObject()->setNumOutputs(1);
-  last_node.getObject()->output_layers.clear();
-  last_node.getObject()->output_layers.push_back(layer->getName());
+  last_node->getObject()->setNumOutputs(1);
+  last_node->getObject()->output_layers.clear();
+  last_node->getObject()->output_layers.push_back(layer->getName());
 
   layer->setNumInputs(1);
   layer->input_layers.clear();
@@ -425,18 +430,23 @@ void NetworkGraph::setOutputLayers() {
 
   size_t last_layer_count = 0;
   for (unsigned int idx = 0; idx < adj.size(); ++idx) {
-    auto &layer_idx = adj[idx].front().getObject();
+    auto &layer_idx = adj[idx].front()->getObject();
+    std::cout << layer_idx->getName() << std::endl;
     for (unsigned int i = 0; i < adj.size(); ++i) {
-      auto &layer_i = adj[i].front().getObject();
+      auto &layer_i = adj[i].front()->getObject();
       if (istrequal(layer_i->getName(), layer_idx->getName()))
         continue;
       for (unsigned int j = 0; j < layer_i->input_layers.size(); ++j) {
         if (istrequal(layer_i->input_layers[j], layer_idx->getName())) {
+          bool already_exist = false;
           for (unsigned int k = 0; k < layer_idx->output_layers.size(); ++k) {
-            if (!istrequal(layer_idx->output_layers[k], layer_i->getName()))
-              continue;
+            if (!istrequal(layer_idx->output_layers[k], layer_i->getName())) {
+              already_exist = true;
+            }
           }
-          layer_idx->output_layers.push_back(layer_i->getName());
+
+          if (!already_exist)
+            layer_idx->output_layers.push_back(layer_i->getName());
         }
       }
     }
@@ -466,7 +476,7 @@ void NetworkGraph::setOutputLayers() {
   }
 
   for (auto iter = adj.begin(); iter < adj.end(); ++iter) {
-    if ((*iter).front().getObject()->output_layers.size() == 0)
+    if ((*iter).front()->getObject()->output_layers.size() == 0)
       throw std::runtime_error("There is un-connected node");
   }
 }
@@ -486,7 +496,7 @@ int NetworkGraph::isCompilable() {
 }
 
 int NetworkGraph::checkCompiledGraph() {
-  auto &l = Sorted[0].getObject();
+  auto &l = Sorted[0]->getObject();
   /** First layer cannot be activation, batch normalization or loss */
   const std::string &type = l->getType();
   if (istrequal(type, ActivationLayer::type) ||
@@ -499,8 +509,8 @@ int NetworkGraph::checkCompiledGraph() {
 
   /** Dimension of input layers must be known */
   for (auto const &lnode : Sorted) {
-    if (lnode.getObject()->getType() == InputLayer::type) {
-      if (lnode.getObject()->getInputDimension().size() == 0) {
+    if (lnode->getObject()->getType() == InputLayer::type) {
+      if (lnode->getObject()->getInputDimension().size() == 0) {
         ml_loge("InputDimension of first layer is not set");
         return ML_ERROR_INVALID_PARAMETER;
       }
@@ -520,7 +530,7 @@ int NetworkGraph::realizeGraph() {
   /** This loop modifes adj. Get the size of adj preemptively. */
 
   for (unsigned int i = 0; i < adj_size_before_realize; ++i) {
-    Layer &l = *adj[i].front().getObject();
+    Layer &l = *adj[i].front()->getObject();
     ml_logd("layer name: %s", l.getName().c_str());
 
     /** If a layer does not has input nodes, then it must have input dimension
@@ -566,18 +576,18 @@ int NetworkGraph::realizeGraph() {
   return status;
 }
 
-LayerNode &NetworkGraph::getLayerNode(const std::string &layer_name) {
+std::shared_ptr<LayerNode> &NetworkGraph::getLayerNode(const std::string &layer_name) {
 
   for (auto &lnode_list : adj) {
     auto &lnode = lnode_list.front();
-    if (istrequal(lnode.getObject()->getName(), layer_name))
+    if (istrequal(lnode->getObject()->getName(), layer_name))
       return lnode;
   }
 
   throw std::invalid_argument("Cannot find Layer");
 }
 
-void NetworkGraph::addEdge(unsigned int ith, LayerNode &node) {
+void NetworkGraph::addEdge(unsigned int ith, std::shared_ptr<LayerNode> &node) {
   if (ith >= adj.size())
     throw std::invalid_argument("Exceed total number of layer");
 
@@ -585,13 +595,13 @@ void NetworkGraph::addEdge(unsigned int ith, LayerNode &node) {
 }
 
 void NetworkGraph::connectGraph(unsigned int adj_idx) {
-  std::list<LayerNode>::iterator iter = adj[adj_idx].begin();
+  std::list<std::shared_ptr<LayerNode>>::iterator iter = adj[adj_idx].begin();
 
-  for (unsigned int j = 0; j < (*iter).getObject()->input_layers.size(); ++j) {
-    if (istrequal((*iter).getObject()->input_layers[j], "__data__"))
+  for (unsigned int j = 0; j < (*iter)->getObject()->input_layers.size(); ++j) {
+    if (istrequal((*iter)->getObject()->input_layers[j], "__data__"))
       continue;
     unsigned int to_node_id =
-      getLayerNode((*iter).getObject()->input_layers[j]).getIndex();
+      getLayerNode((*iter)->getObject()->input_layers[j])->getIndex();
     addEdge(to_node_id, (*iter));
   }
 }
@@ -606,19 +616,19 @@ int NetworkGraph::connectGraph() {
 
 void NetworkGraph::setBatchSize(unsigned int batch_size) {
   for (auto const &layer_adj_list : adj) {
-    layer_adj_list.front().getObject()->setBatch(batch_size);
+    layer_adj_list.front()->getObject()->setBatch(batch_size);
   }
 }
 
 sharedConstTensors NetworkGraph::forwarding(bool training) {
   for (auto const &ln : getSorted()) {
     START_PROFILE(ln.event_key);
-    ln.getObject()->forwarding(training);
+    ln->getObject()->forwarding(training);
     END_PROFILE(ln.event_key);
   }
 
   std::vector<sharedConstTensor> out;
-  for (auto const &nh : getSorted().back().getObject()->net_hidden)
+  for (auto const &nh : getSorted().back()->getObject()->net_hidden)
     out.push_back(MAKE_SHARED_TENSOR(nh->getVariable()));
 
   return out;
@@ -627,13 +637,13 @@ sharedConstTensors NetworkGraph::forwarding(bool training) {
 std::vector<TensorDim> NetworkGraph::getInputDimension() const {
   NNTR_THROW_IF(this->empty(), std::invalid_argument)
     << "[NetworkGraph] the graph has no node!";
-  return getSorted()[0].getObject()->getInputDimension();
+  return getSorted()[0]->getObject()->getInputDimension();
 }
 
 std::vector<TensorDim> NetworkGraph::getOutputDimension() const {
   NNTR_THROW_IF(this->empty(), std::invalid_argument)
     << "[NetworkGraph] the graph has no node!";
-  return getSorted().back().getObject()->getOutputDimension();
+  return getSorted().back()->getObject()->getOutputDimension();
 }
 
 std::vector<std::shared_ptr<Layer>>
@@ -643,7 +653,7 @@ NetworkGraph::getUnsortedLayers(const std::string &input_layer,
   unsigned int num_layers_remove_end = 0;
   if (!output_layer.empty()) {
     for (auto iter = adj.rbegin(); iter != adj.rend(); iter++) {
-      if ((*iter).front().getObject()->getName() != output_layer)
+      if ((*iter).front()->getObject()->getName() != output_layer)
         num_layers_remove_end++;
       else
         break;
@@ -658,7 +668,7 @@ NetworkGraph::getUnsortedLayers(const std::string &input_layer,
   if (!input_layer.empty()) {
     for (auto iter = adj.begin(); iter != adj.end() - num_layers_remove_end;
          iter++) {
-      if ((*iter).front().getObject()->getName() != input_layer)
+      if ((*iter).front()->getObject()->getName() != input_layer)
         num_layers_remove_start++;
       else
         break;
@@ -669,7 +679,7 @@ NetworkGraph::getUnsortedLayers(const std::string &input_layer,
   std::vector<std::shared_ptr<Layer>> ret;
   std::transform(adj.begin() + num_layers_remove_start,
                  adj.end() - num_layers_remove_end, std::back_inserter(ret),
-                 [](auto const &elem) { return elem.front().getObject(); });
+                 [](auto const &elem) { return elem.front()->getObject(); });
 
   return ret;
 }
@@ -678,10 +688,10 @@ std::vector<std::shared_ptr<Layer>> NetworkGraph::getLayers() {
   std::vector<std::shared_ptr<Layer>> ret;
   if (compiled) {
     std::transform(Sorted.begin(), Sorted.end(), std::back_inserter(ret),
-                   [](auto const &elem) { return elem.getObject(); });
+                   [](auto const &elem) { return elem->getObject(); });
   } else {
     std::transform(adj.begin(), adj.end(), std::back_inserter(ret),
-                   [](auto const &elem) { return elem.front().getObject(); });
+                   [](auto const &elem) { return elem.front()->getObject(); });
   }
 
   return ret;
@@ -734,15 +744,15 @@ void NetworkGraph::extendGraph(std::vector<std::shared_ptr<Layer>> graph,
 
   /** This allows connecting a layer to the backbone */
   sub_in_out.insert(
-    std::make_pair(prefix, adj.back().front().getObject()->getName()));
+    std::make_pair(prefix, adj.back().front()->getObject()->getName()));
 }
 
-void NetworkGraph::addLayer(std::shared_ptr<Layer> layer) {
+void NetworkGraph::addLayer(std::shared_ptr<LayerNode> layer) {
   if (compiled)
     throw std::runtime_error("Cannot modify graph after compile");
 
   /** Ensure that the layer has a name and is unique */
-  ensureName(layer);
+  ensureName(layer->getObject());
 
   /** Insert the layer to the graph */
   addLayerNode(layer);
@@ -751,7 +761,7 @@ void NetworkGraph::addLayer(std::shared_ptr<Layer> layer) {
 void NetworkGraph::inPlaceOptimize(const std::string &layer_type,
                                    Manager &manager) {
   for (auto &layer_node : getSorted()) {
-    auto &l = layer_node.getObject();
+    auto &l = layer_node->getObject();
     if (l->getType() == layer_type &&
         l->getActivationType() != ActivationType::ACT_SOFTMAX) {
       /** @note assumes layer to be optimized is only for single in/out tensor
@@ -759,7 +769,7 @@ void NetworkGraph::inPlaceOptimize(const std::string &layer_type,
       if (l->input_layers.size() != 1)
         throw std::runtime_error("Internal error in the formed graph");
 
-      auto &prev_layer = getLayerNode(l->input_layers[0]).getObject();
+      auto &prev_layer = getLayerNode(l->input_layers[0])->getObject();
 
       unsigned int loc;
       auto layer_name = l->getName();
@@ -842,14 +852,14 @@ void NetworkGraph::inPlaceOptimize(Manager &manager) {
     inPlaceOptimize(layer_type, manager);
 }
 
-const std::vector<LayerNode> &NetworkGraph::getSorted() const {
+const std::vector<std::shared_ptr<LayerNode>> &NetworkGraph::getSorted() const {
   if (!compiled)
     throw std::runtime_error("Cannot get sorted graph before compiling graph");
 
   return Sorted;
 }
 
-std::vector<LayerNode> &NetworkGraph::getSorted() {
+std::vector<std::shared_ptr<LayerNode>> &NetworkGraph::getSorted() {
   if (!compiled)
     throw std::runtime_error("Cannot get sorted graph before compiling graph");
 

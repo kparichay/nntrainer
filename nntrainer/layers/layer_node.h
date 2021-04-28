@@ -25,6 +25,8 @@ namespace nntrainer {
  */
 class LayerNode : public ml::train::Layer, public GraphNode {
 public:
+  LayerNode() : layer(nullptr), index(0) {}
+
   /**
    * @brief     Constructor of LayerNode class
    *
@@ -38,6 +40,8 @@ public:
    *
    */
   ~LayerNode() = default;
+
+  void setIndex(size_t idx) { index = idx; }
 
   /**
    * Support all the interface requirements by ml::train::Layer
@@ -62,6 +66,9 @@ public:
   int setProperty(std::vector<std::string> properties) {
     return layer->setProperty(properties);
   }
+
+  // TODO: remove this
+  int setName(std::string name) { return layer->setName(name); }
 
   /**
    * @brief     Get name of the layer
@@ -111,8 +118,8 @@ private:
     layer;      /**< The actual object in the graph node */
   size_t index; /**< index of each node */
 
-  std::vector<std::string> input_layers;  /**< input layer names */
-  std::vector<std::string> output_layers; /**< output layer names */
+  // std::vector<std::string> input_layers;  /**< input layer names */
+  // std::vector<std::string> output_layers; /**< output layer names */
   bool flatten; /**< flatten the output of this node */
   ActivationType
     activation_type; /**< activation applied to the output of this node */

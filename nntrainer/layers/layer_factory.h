@@ -31,6 +31,7 @@ const std::string layerGetStrType(const LayerType &type);
 
 /**
  * @brief Layer factory creator with constructor
+ * @TODO: update this as style of ml::train::createLayer
  */
 std::unique_ptr<Layer> createLayer(const std::string &type);
 

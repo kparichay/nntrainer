@@ -260,7 +260,7 @@ public:
   }
 
 private:
-  FactoryMap<ml::train::Optimizer, ml::train::Layer> factory_map;
+  FactoryMap<ml::train::Optimizer, nntrainer::Layer> factory_map;
   std::string working_path_base;
 };
 

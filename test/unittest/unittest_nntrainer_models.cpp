@@ -332,13 +332,13 @@ GraphWatcher::GraphWatcher(const std::string &config, const bool opt) :
 
   NetworkGraphType model_graph = nn.getNetworkGraph();
 
-  std::vector<NodeType> graph = model_graph.getSorted();
+  std::vector<std::shared_ptr<NodeType>> graph = model_graph.getSorted();
 
   for (auto it = graph.begin(); it != graph.end() - 1; ++it) {
-    nodes.push_back(NodeWatcher(*it));
+    nodes.push_back(NodeWatcher(*(*it).get()));
   }
 
-  loss_node = NodeWatcher(graph.back());
+  loss_node = NodeWatcher(*graph.back().get());
 }
 
 void GraphWatcher::compareFor(const std::string &reference,
@@ -942,8 +942,10 @@ TEST(nntrainerModels, read_save_01_n) {
     nntrainer::createLayer(nntrainer::InputLayer::type);
   layer->setProperty(
     {"input_shape=1:1:62720", "normalization=true", "bias_initializer=zeros"});
+  std::shared_ptr<nntrainer::LayerNode> layer_node =
+    std::shared_ptr<nntrainer::LayerNode>(layer, 0);
 
-  EXPECT_NO_THROW(NN.addLayer(layer));
+  EXPECT_NO_THROW(NN.addLayer(layer_node));
   EXPECT_NO_THROW(NN.setProperty({"loss=mse"}));
 
   EXPECT_THROW(NN.readModel(), std::runtime_error);

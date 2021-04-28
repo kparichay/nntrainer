@@ -93,7 +93,7 @@ private:
    * @param[in] layer_name name of the layer to be loaded
    * @param[in] layer_type type of the layer to be loaded
    */
-  int loadLayerConfigIniCommon(dictionary *ini, std::shared_ptr<Layer> &layer,
+  int loadLayerConfigIniCommon(dictionary *ini, std::shared_ptr<LayerNode> &layer,
                                const std::string &layer_name,
                                const std::string &layer_type);
 
@@ -103,7 +103,7 @@ private:
    * @param[in/out] layer layer to be loaded
    * @param[in] layer_name name of the layer to be loaded
    */
-  int loadLayerConfigIni(dictionary *ini, std::shared_ptr<Layer> &layer,
+  int loadLayerConfigIni(dictionary *ini, std::shared_ptr<LayerNode> &layer,
                          const std::string &layer_name);
 
   /**
@@ -130,7 +130,7 @@ private:
    */
   int loadBackboneConfigExternal(dictionary *ini,
                                  const std::string &backbone_config,
-                                 std::shared_ptr<Layer> &layer,
+                                 std::shared_ptr<LayerNode> &layer,
                                  const std::string &backbone_name);
 
   /**

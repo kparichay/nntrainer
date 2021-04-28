@@ -17,6 +17,7 @@
 #include <app_context.h>
 #include <manager.h>
 #include <nntrainer_test_util.h>
+#include <layer_node.h>
 
 #include <layers/l2norm.h>
 
@@ -25,13 +26,12 @@ namespace layers {
 
 TEST(l2norm, simple_functions) {
   auto &app_context = nntrainer::AppContext::Global();
-  app_context.registerFactory(ml::train::createLayer<L2NormLayer>);
+  app_context.registerFactory(nntrainer::createLayer<L2NormLayer>);
 
   auto c =
-    app_context.createObject<ml::train::Layer>("l2norm", {"input_shape=1:1:4"});
+    app_context.createObject<nntrainer::Layer>("l2norm", {"input_shape=1:1:4"});
 
-  std::unique_ptr<nntrainer::Layer> layer(
-    static_cast<nntrainer::Layer *>(c.release()));
+  std::unique_ptr<L2NormLayer> layer(static_cast<L2NormLayer *>(c.release()));
 
   nntrainer::Manager manager;
   manager.setInferenceInOutMemoryOptimization(false);

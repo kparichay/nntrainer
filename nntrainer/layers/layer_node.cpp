@@ -271,7 +271,11 @@ void LayerNode::save(std::ofstream &file) const {
  * @brief     Finalize creating the layer node
  */
 void LayerNode::finalize() {
+  /** Create init context right before finalize */
+  init_context = InitLayerContext(input_dim);
+#if LAYER_V2
   layer->finalize(init_context);
+#endif
   finalized = true;
 }
 

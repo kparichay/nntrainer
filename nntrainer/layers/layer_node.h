@@ -409,6 +409,42 @@ public:
    */
   friend std::ostream &operator<<(std::ostream &out, const LayerNode &l);
 
+  /**
+   * @brief   Get init layer context
+   *
+   * @retval  init layer context
+   */
+  const InitLayerContext &getInitContext() const { return init_context; }
+
+  /**
+   * @brief   Get run layer context
+   *
+   * @retval  run layer context
+   */
+  const RunLayerContext &getRunContext() const { return run_context; }
+
+  /**
+   * @brief   Set run layer context
+   *
+   * @param  context Updated run layer context
+   */
+  void updateRunContext(RunLayerContext &&context) {
+    // TODO: ensure props/trainable must match
+    run_context = std::move(context);
+  }
+
+  /**
+   * @brief Set input dimension for the layer
+   *
+   * @param dim Input tensor dim
+   * @param idx Index of the dim
+   */
+  void setInputDimension(const TensorDim &dim, unsigned int idx) {
+    if (idx >= getNumInputs())
+      throw std::out_of_range("Setting dimensions out of bounds");
+    input_dim[idx] = dim;
+  }
+
 private:
   /// @todo: remove this
   std::shared_ptr<nntrainer::LayerV1>
@@ -422,7 +458,6 @@ private:
   size_t index;   /**< index of each node */
   bool finalized; /**< if the layer node has been finalized */
 
-  /** TODO : move management of num_inputs to layer_node */
   std::vector<std::string> input_layers;  /**< input layer names */
   std::vector<std::string> output_layers; /**< output layer names */
   bool flatten;    /**< flatten the output of this node */
@@ -430,15 +465,19 @@ private:
   ActivationType
     activation_type; /**< activation applied to the output of this node */
 
-  RunLayerContext
-    run_context; /**< context required for running/execution of the layer. This
-                    will also contain the properties of the layer. The
-                    properties will be copied upon final creation. Editing
-                    properties of the layer after init will not the properties
-                    in the context/graph unless intended. */
+  std::vector<TensorDim>
+    input_dim; /**< input dimension for the layer. This can be in partial state
+                  before the layer is initialized */
   InitLayerContext init_context; /**< context to be built for/while
                                     initialization of the layer. This will also
                                     contain the properties of the layer. */
+
+  RunLayerContext run_context; /**< context required for running/execution of
+                    the layer. This will also contain the properties of the
+                    layer. The properties will be copied upon final creation.
+                    Editing properties of the layer after init will not the
+                    properties in the context/graph unless intended. */
+
   /**
    * These properties are set for the layer by the user but are intercepted
    * and used in the node which forms the basic element of the graph.

@@ -163,8 +163,9 @@ public:
    * @param w   node Graph node to extract node identifiers/info
    * @param w   weights_spec Specficiation for the weights
    */
-  std::vector<Weight *> requestWeights(const GraphNode &node,
-                                       std::vector<Weight::Spec> &weights_spec);
+  std::vector<Weight *>
+  requestWeights(const GraphNode &node,
+                 const std::vector<Weight::Spec> &weights_spec);
 
   /**
    * @brief     Create tensors with the given spec
@@ -173,23 +174,31 @@ public:
    */
   std::vector<Var_Grad *>
   requestTensors(const GraphNode &node,
-                 std::vector<Var_Grad::Spec> &tensors_spec);
+                 const std::vector<Var_Grad::Spec> &tensors_spec);
 
   /**
    * @brief     Create tensors with the given spec
    *
    * @param w   create tensors list
    */
-  std::vector<Var_Grad *> requestInputs(const GraphNode &node,
-                                        std::vector<TensorDim> &inputs_spec);
+  std::vector<Var_Grad *>
+  requestInputs(const GraphNode &node,
+                const std::vector<TensorDim> &inputs_spec) {
+    /** NYI */
+    return {};
+  }
 
   /**
    * @brief     Create tensors with the given spec
    *
    * @param w   create tensors list
    */
-  std::vector<Var_Grad *> requestOutputs(const GraphNode &node,
-                                         std::vector<TensorDim> &outputs_spec);
+  std::vector<Var_Grad *>
+  requestOutputs(const GraphNode &node,
+                 const std::vector<TensorDim> &outputs_spec) {
+    /** NYI */
+    return {};
+  }
 
   /**
    * @brief     Get weights tracked with nntrainer

@@ -632,7 +632,7 @@ void Manager::deinitializeTensors() {
  */
 std::vector<Weight *>
 Manager::requestWeights(const GraphNode &node,
-                        std::vector<Weight::Spec> &weights_spec) {
+                        const std::vector<Weight::Spec> &weights_spec) {
   std::vector<Weight *> ret;
   std::vector<std::unique_ptr<Weight>> weights_list;
   weights_list.reserve(weights_spec.size());
@@ -655,7 +655,7 @@ Manager::requestWeights(const GraphNode &node,
  */
 std::vector<Var_Grad *>
 Manager::requestTensors(const GraphNode &node,
-                        std::vector<Var_Grad::Spec> &tensors_spec) {
+                        const std::vector<Var_Grad::Spec> &tensors_spec) {
   std::vector<Var_Grad *> ret;
   std::vector<std::unique_ptr<Var_Grad>> tensors_list;
   tensors_list.reserve(tensors_spec.size());

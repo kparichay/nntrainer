@@ -12,6 +12,7 @@
 
 #include <layers_common_tests.h>
 
+#include <app_context.h>
 #include <layer_devel.h>
 
 constexpr unsigned SAMPLE_TRIES = 10;
@@ -27,7 +28,16 @@ void LayerSementics::SetUp() {
 
 void LayerSementics::TearDown() {}
 
-TEST_P(LayerSementics, createFromAppContext_pn) {}
+TEST_P(LayerSementics, createFromAppContext_pn) {
+  auto ac = nntrainer::AppContext::Global(); /// copy intended
+  if (~(options & LayerCreateSetPropertyOptions::AVAILABLE_FROM_APP_CONTEXT)) {
+    EXPECT_THROW(ac.createObject<nntrainer::Layer>(expected_type),
+                 std::invalid_argument);
+    ac.registerFactory<nntrainer::Layer>(std::get<0>(GetParam()));
+  }
+  EXPECT_EQ(ac.createObject<nntrainer::Layer>(expected_type)->getType(),
+            expected_type);
+}
 
 TEST_P(LayerSementics, setProperties_p) {
   /// @todo check if setProperties does not collide with layerNode designated

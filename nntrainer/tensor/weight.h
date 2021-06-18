@@ -56,7 +56,7 @@ public:
    *
    */
   typedef std::tuple<TensorDim, WeightInitializer, WeightRegularizer, float,
-                     bool, std::string>
+                     bool, const std::string>
     Spec;
 
   /**

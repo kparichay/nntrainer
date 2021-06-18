@@ -30,7 +30,7 @@ public:
    * @brief Specification of the Var_Grad
    *
    */
-  typedef std::tuple<const TensorDim, bool, const std::string> Spec;
+  typedef std::tuple<TensorDim, bool, const std::string> Spec;
 
   /**
    * @brief Var_Grad default constructor

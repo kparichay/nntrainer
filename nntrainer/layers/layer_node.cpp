@@ -31,6 +31,7 @@ LayerNode::LayerNode(std::unique_ptr<nntrainer::Layer> &&layer_v2,
   layerv1(layer_v1),
   layer(std::move(layer_v2)),
   index(idx),
+  finalized(false),
   flatten(false),
   distribute(false),
   activation_type(ActivationType::ACT_NONE),
@@ -265,5 +266,50 @@ void LayerNode::save(std::ofstream &file) const {
     getLayer()->save(file);
   }
 }
+
+/**
+ * @brief     Finalize creating the layer node
+ */
+void LayerNode::finalize() {
+  layer->finalize(init_context);
+  finalized = true;
+}
+
+/**
+ * @brief     Forward Propagation of a layer
+ */
+void LayerNode::forwarding(bool training) {
+  layer->forwarding(run_context, training);
+}
+
+/**
+ * @brief     calc the derivative to be passed to the previous layer
+ */
+void LayerNode::calcDerivative() { layer->calcDerivative(run_context); }
+
+/**
+ * @brief     Calculate the derivative of a layer
+ */
+void LayerNode::calcGradient() { layer->calcGradient(run_context); }
+
+/**
+ * @brief Set the batch for the layer
+ */
+void LayerNode::setBatch(unsigned int batch) {
+  if (finalized)
+    layer->setBatch(run_context, batch);
+  else
+    layer->setBatch(init_context, batch);
+}
+
+/**
+ * @brief   If the current layer can support in-place
+ */
+bool LayerNode::supportInPlace() const { return layer->supportInPlace(); }
+
+/**
+ * @brief  check if this layer requires label to be passed
+ */
+bool LayerNode::requireLabel() const { return layer->requireLabel(); }
 
 }; // namespace nntrainer

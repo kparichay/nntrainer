@@ -681,8 +681,8 @@ void NetworkGraph::inPlaceOptimize(Manager &manager) {
   }
 }
 
-void NetworkGraph::init2runContext(InitLayerContext &init_context,
-                                   RunLayerContext &run_context) {
+void NetworkGraph::init2RunLayerContext(InitLayerContext &init_context,
+                                        RunLayerContext &run_context) {
   // NOTE: this just create the wrappers and does not actually memory inside
   // these wrappers
   // TODO: create wrappers for weights - initialize is already done, so the
@@ -743,14 +743,14 @@ int NetworkGraph::initialize(std::shared_ptr<Manager> manager) {
     status = lptr->initialize(*manager);
     NN_RETURN_STATUS();
 
-    // TODO: call init2runContext
+    // TODO: call init2RunLayerContext
     auto &in_out = manager->trackLayerOutputs(cur_type, lnode->getName(),
                                               lptr->getOutputDimension(),
                                               lptr->getInputDimension());
     // TODO: remove this
     lptr->setOutputBuffers(in_out);
 
-    // TODO: fill runcontext of other guys as well
+    // TODO: fill RunLayerContext of other guys as well
     /** Connect the output of the previous layers with the input of the current
      * layer */
     if (!first) {

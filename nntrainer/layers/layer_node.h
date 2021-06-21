@@ -331,7 +331,9 @@ public:
    */
   void addInputLayers(const std::string &in_layer) {
     input_layers.push_back(in_layer);
-    layerv1->setNumInputs(input_layers.size());
+    input_dim.resize(input_layers.size());
+    if (layerv1)
+      layerv1->setNumInputs(input_layers.size());
   }
 
   /**
@@ -341,7 +343,8 @@ public:
    */
   void addOutputLayers(const std::string &out_layer) {
     output_layers.push_back(out_layer);
-    layerv1->setNumOutputs(output_layers.size());
+    if (layerv1)
+      layerv1->setNumOutputs(output_layers.size());
   }
 
   /**
@@ -351,7 +354,9 @@ public:
    */
   void setInputLayers(const std::vector<std::string> &layers) {
     input_layers = layers;
-    layerv1->setNumInputs(layers.size());
+    input_dim.resize(layers.size());
+    if (layerv1)
+      layerv1->setNumInputs(layers.size());
   }
 
   /**
@@ -361,7 +366,8 @@ public:
    */
   void setOutputLayers(const std::vector<std::string> &layers) {
     output_layers = layers;
-    layerv1->setNumOutputs(layers.size());
+    if (layerv1)
+      layerv1->setNumOutputs(layers.size());
   }
 
   /**

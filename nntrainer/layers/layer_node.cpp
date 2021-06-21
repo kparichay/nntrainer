@@ -110,6 +110,41 @@ void LayerNode::setProperty(const nntrainer::LayerV1::PropertyType type,
   using PropertyType = nntrainer::LayerV1::PropertyType;
 
   switch (type) {
+  case PropertyType::input_shape: {
+    if (getNumInputs() > 1) {
+      throw std::invalid_argument("input_shape keyword is only for one input");
+    }
+
+    if (getNumInputs() == 0) {
+      input_dim.resize(1);
+      // FIXME: input_layers information is currently unavailable
+      // so input_dim and input_layers are inconsistent with this
+      // fix this when debugging with layerV2
+    }
+
+    TensorDim &in_dim = input_dim[0];
+    if (!value.empty()) {
+      unsigned int cache_batch_size = 1;
+      /** cache original value of batch size */
+      if (in_dim.batch()) {
+        cache_batch_size = in_dim.batch();
+        in_dim.batch(1);
+      }
+      status = in_dim.setTensorDim(value.c_str());
+      if (in_dim.batch() > 1) {
+        ml_logw("Batch size set with input dimension %d is ignored."
+                "Set batchsize property for the model to update batchsize.",
+                in_dim.batch());
+      }
+      /** set back to cache value of dimension */
+      in_dim.batch(cache_batch_size);
+      throw_status(status);
+    }
+    // FIXME: this throws input_dim is still needed by LayerV1. It is in core
+    // structure of LayerV1 and cant be directly moved to LayerV2 for now.
+    // This throw allows setting input_dim for LayerV1 as well.
+    throw std::invalid_argument("Setting input_dim for LayerV1 as well.");
+  } break;
   case PropertyType::name:
     if (!value.empty()) {
       std::get<props::Name>(*props).set(value);

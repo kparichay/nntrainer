@@ -72,11 +72,11 @@ private:
    * @todo  deprecate this
    *
    * @param layer_v2 layer v2
-   * @param layer_v1 layer v1
+   * @param layerv1 layer v1
    * @param idx      idx
    */
   LayerNode(std::unique_ptr<nntrainer::Layer> &&layer_v2,
-            std::shared_ptr<nntrainer::LayerV1> layer_v1, size_t idx = 0);
+            std::shared_ptr<nntrainer::LayerV1> layerv1, size_t idx = 0);
 
 public:
   /**

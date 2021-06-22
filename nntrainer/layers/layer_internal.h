@@ -57,21 +57,20 @@ public:
   /**
    * @brief     Constructor of Layer Class
    */
-  LayerV1(ActivationType activation_type_ = ActivationType::ACT_NONE,
-          WeightRegularizer weight_regularizer_ = WeightRegularizer::NONE,
-          const float weight_regularizer_constant_ = 1.0f,
-          WeightInitializer weight_initializer_ =
-            WeightInitializer::WEIGHT_XAVIER_UNIFORM,
-          WeightInitializer bias_initializer_ = WeightInitializer::WEIGHT_ZEROS,
-          bool trainable_ = true) :
+  LayerV1(
+    ActivationType activation_type_ = ActivationType::ACT_NONE,
+    WeightRegularizer weight_regularizer_ = WeightRegularizer::NONE,
+    const float weight_regularizer_constant_ = 1.0f,
+    WeightInitializer weight_initializer_ =
+      WeightInitializer::WEIGHT_XAVIER_UNIFORM,
+    WeightInitializer bias_initializer_ = WeightInitializer::WEIGHT_ZEROS) :
     layer_props(),
     loss(0.0f),
     activation_type(activation_type_),
     weight_regularizer(weight_regularizer_),
     weight_regularizer_constant(weight_regularizer_constant_),
     weight_initializer(weight_initializer_),
-    bias_initializer(bias_initializer_),
-    trainable(trainable_) {
+    bias_initializer(bias_initializer_) {
     setNumInputs(1);
     setNumOutputs(1);
   }
@@ -358,17 +357,12 @@ public:
   virtual float getLoss() { return loss; }
 
   /**
-   * @brief     set trainable for this layer
-   * @param[in] train to enable/disable train
+   * @brief  check if this layer supports backwarding
+   * @note   support backwarding primarily means that the layer can process the
+   * derivatives and return back the gradients to the previous layer.
+   * @return true if supports backwarding, else false
    */
-  virtual void setTrainable(bool train) { trainable = train; }
-
-  /**
-   * @brief     get trainable for this layer
-   * @retval train to enable/disable train
-   */
-  virtual bool getTrainable() noexcept { return trainable; }
-
+  virtual bool supportBackwarding() const { return true; };
   /**
    * @brief     get all weights of the layer
    * @retval    vector of all params
@@ -659,11 +653,6 @@ protected:
    * @brief initializer for bias
    */
   WeightInitializer bias_initializer;
-
-  /**
-   * @brief     making this false will skip updating this layer variables
-   */
-  bool trainable;
 
   /**
    * @brief     weight_list in this layer. This contains all weights of the

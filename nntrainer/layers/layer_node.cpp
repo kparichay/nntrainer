@@ -18,6 +18,7 @@
 #include <time_dist.h>
 
 #include <common_properties.h>
+
 namespace nntrainer {
 
 LayerNode::LayerNode(std::shared_ptr<nntrainer::LayerV1> l, size_t idx) :
@@ -35,7 +36,8 @@ LayerNode::LayerNode(std::unique_ptr<nntrainer::Layer> &&layer_v2,
   flatten(false),
   distribute(false),
   activation_type(ActivationType::ACT_NONE),
-  props(new std::tuple<props::Name>(props::Name())) {
+  props(new std::tuple<props::Name, props::Trainable>(props::Name(),
+                                                      props::Trainable())) {
   if (layerv1 && layerv1->getType() == TimeDistLayer::type) {
     distribute = true;
   } else if (layer && layer->getType() == TimeDistLayer::type) {
@@ -75,8 +77,10 @@ createLayerNode(std::shared_ptr<nntrainer::LayerV1> layer,
 int LayerNode::setProperty(std::vector<std::string> properties) {
   int status = ML_ERROR_NONE;
 
-  /// @todo: deprecate this in favor of loadProperties
+  properties = loadProperties(properties, *props.get());
   std::vector<std::string> remainder;
+
+  /// @todo: deprecate this in favor of loadProperties
   for (unsigned int i = 0; i < properties.size(); ++i) {
     std::string key;
     std::string value;
@@ -239,7 +243,7 @@ const std::shared_ptr<nntrainer::LayerV1> &LayerNode::getObject() const {
 }
 
 bool LayerNode::getTrainable() const noexcept {
-  return getLayer()->getTrainable();
+  return std::get<props::Trainable>(*props);
 }
 
 const std::shared_ptr<nntrainer::LayerV1> &LayerNode::getLayer() const {

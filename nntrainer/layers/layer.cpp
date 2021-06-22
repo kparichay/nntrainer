@@ -85,7 +85,6 @@ void LayerV1::copy(std::shared_ptr<LayerV1> l) {
   this->weight_regularizer = l->weight_regularizer;
   this->weight_regularizer_constant = l->weight_regularizer_constant;
   this->weight_initializer = l->weight_initializer;
-  this->trainable = l->trainable;
 }
 
 sharedConstTensors LayerV1::forwarding_with_val(sharedConstTensors input,
@@ -245,12 +244,6 @@ void LayerV1::setProperty(const PropertyType type, const std::string &value) {
       bias_initializer = (WeightInitializer)parseType(value, TOKEN_WEIGHT_INIT);
     }
     break;
-  case PropertyType::trainable:
-    if (!value.empty()) {
-      status = setBoolean(trainable, value);
-      throw_status(status);
-    }
-    break;
   default:
     std::string msg =
       "[Layer] Unknown Layer Property Key for value " + std::string(value);
@@ -289,7 +282,7 @@ void LayerV1::printPropertiesMeta(std::ostream &out) {
 }
 
 void LayerV1::printProperties(std::ostream &out) {
-  out << "Trainable: " << trainable << std::endl;
+  // out << "Trainable: " << trainable << std::endl;
   printIfValid(out, PropertyType::weight_regularizer,
                static_cast<int>(weight_regularizer));
   printIfValid(out, PropertyType::weight_regularizer_constant,

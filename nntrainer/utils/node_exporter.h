@@ -203,6 +203,7 @@ void Exporter::saveTflResult(const PropsType &props, const NodeType *self) {
 namespace props {
 class Name;
 class Unit;
+class Trainable;
 } // namespace props
 
 class LayerV1;
@@ -219,8 +220,9 @@ class LayerNode;
  * Exporter::saveTflResult(const PropsType &props, const NodeType *self);
  */
 template <>
-void Exporter::saveTflResult(const std::tuple<props::Name> &props,
-                             const LayerNode *self);
+void Exporter::saveTflResult(
+  const std::tuple<props::Name, props::Trainable> &props,
+  const LayerNode *self);
 
 class FullyConnectedLayer;
 /**

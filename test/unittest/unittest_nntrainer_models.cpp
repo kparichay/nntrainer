@@ -41,7 +41,7 @@ static const std::string getModelsPath(const std::string &file_name) {
  * Watcher Classes                                      *
  ********************************************************/
 
-using NodeType = std::shared_ptr<const nntrainer::LayerNode>;
+using NodeType = std::shared_ptr<nntrainer::LayerNode>;
 using FlatGraphType = nntrainer::NeuralNetwork::FlatGraphType;
 using NetworkGraphType = nntrainer::NetworkGraph;
 
@@ -113,10 +113,10 @@ public:
    *
    * @param node node to watch.
    */
-  NodeWatcher(const NodeType &node) : node(node) {
+  NodeWatcher(const NodeType &nd) : node(nd) {
     unsigned int num_weights = node->getObject()->getNumWeights();
     try {
-      node->getObject()->setTrainable(true);
+      node->setProperty({"trainable=true"});
     } catch (...) {
       std::cout << "Cannot set layer " << node->getType() << " trainable";
     }

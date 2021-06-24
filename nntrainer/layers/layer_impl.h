@@ -70,9 +70,8 @@ public:
                         const ExportMethods &method) const override;
 
 protected:
-  bool finalized; /**< check if finalized */
-  std::unique_ptr<std::tuple<>>
-    layer_impl_props; /**< layer_impl_props */
+  bool finalized;                                 /**< check if finalized */
+  std::unique_ptr<std::tuple<>> layer_impl_props; /**< layer_impl_props */
 
   WeightRegularizer weight_regularizer; /**< weight regularizer */
   float weight_regularizer_constant;    /**< weight regularizer constant */

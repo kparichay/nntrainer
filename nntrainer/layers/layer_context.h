@@ -449,22 +449,18 @@ public:
    * @note loss value is only used for loss layers. For non-loss layers, setting
    * this value will have no change on the behavior of the model.
    */
-  void setLoss(float val) {
-    loss = val;
-  }
+  void setLoss(float val) { loss = val; }
 
   /**
    * @brief   update loss by the layer
    *
    * @return loss of the layer
    */
-  float getLoss() const {
-    return loss;
-  }
+  float getLoss() const { return loss; }
 
 private:
   std::tuple<props::Name> props; /**< props of the layer */
-  float loss; /**< loss of the layer */
+  float loss;                    /**< loss of the layer */
 
   std::vector<Weight *> weights;   /**< weights of the layer */
   std::vector<Var_Grad *> inputs;  /**< inputs of the layer */

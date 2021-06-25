@@ -23,7 +23,6 @@
 #include <cross_entropy_softmax_loss_layer.h>
 #include <flatten_layer.h>
 #include <input_layer.h>
-#include <layer_factory.h>
 #include <network_graph.h>
 #include <nntrainer_error.h>
 #include <nntrainer_log.h>

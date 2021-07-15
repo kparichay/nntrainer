@@ -12,7 +12,6 @@ layer_sources = [
   'flatten_layer.cpp',
   'input_layer.cpp',
   'output_layer.cpp',
-  'layer.cpp',
   'layer_node.cpp',
   'pooling2d_layer.cpp',
   'preprocess_flip_layer.cpp',
@@ -30,7 +29,6 @@ layer_sources = [
 ]
 
 layer_headers = [
-  'layer_internal.h',
   'acti_func.h',
   'layer_node.h',
   'common_properties.h',
